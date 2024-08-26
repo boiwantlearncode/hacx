@@ -1,8 +1,53 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from "react";
+import {NextUIProvider, Tabs, Tab, Spacer, Button} from "@nextui-org/react";
+import Form from "./form";
+
 
 export default function Home() {
+  // Content will contain the saved information
+  const [tabs, setTabs] = useState([
+    {
+      title: "Tab 1",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+    },
+    {
+      title: "Tab 2",
+      content: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+    },
+    {
+      title: "Tab 3",
+      content: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    }
+  ]);
+
+  const addTab = () => {
+    setTabs([...tabs, {
+      title: `Tab ${tabs.length + 1}`,
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+    }]);
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <NextUIProvider>
+      <main className="flex min-h-screen flex-col items-center p-16 bg-slate-50">
+        <h1 className="text-2xl">Generate your PDE Materials</h1>
+        <Spacer y={12} />
+        <section className="flex w-full flex-col">
+          <Tabs aria-label="Tabs" isVertical={true}>
+            {Array.from(tabs).map(({title, content}) => (
+              <Tab key={title} title={title} className="w-full">
+                <Form/>
+              </Tab>
+            ))}
+          </Tabs>
+          {/* Button width is supposed to match that of the tabs */}
+          <Button size="sm" radius="none" className="w-8 mx-0.5 bg-transparent" disableRipple={true} onClick={addTab}>+</Button>
+        </section>
+      </main>
+    </NextUIProvider>
+/*     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
         <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
           Get started by editing&nbsp;
@@ -108,6 +153,6 @@ export default function Home() {
           </p>
         </a>
       </div>
-    </main>
+    </main> */
   );
 }
