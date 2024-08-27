@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 // import {NextUIProvider, Tabs, Tab, Spacer, Button} from "@nextui-org/react";
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./VerticalTabs";
-import Spacer from "./Spacer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/VerticalTabs";
+import Spacer from "./components/Spacer";
 
 import AIGeneratorForm from "./AIGeneratorForm";
 
@@ -34,7 +34,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-16 bg-slate-50">
+    <main className="flex min-h-screen flex-col items-center p-16 bg-muted">
       <Spacer y={16}></Spacer>
       <section className="flex flex-col w-full items-center">
         <Tabs defaultValue="Tab 1" className="w-4/5">

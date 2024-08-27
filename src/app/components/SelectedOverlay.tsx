@@ -28,7 +28,7 @@ export const OverlayProvider = ({ children }: { children: React.ReactNode }) => 
     return <OverlayContext.Provider value={{ selected, setSelected: editSelected }}>{children}</OverlayContext.Provider>
 }
 
-export const MyOverlay = ({ index }: { index: number }) => {
+export const SelectedOverlay = ({ index }: { index: number }) => {
     const ovl = useOverlay()
     return (
         <div

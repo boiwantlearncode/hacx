@@ -1,32 +1,3 @@
-// import {CheckboxGroup, Checkbox, Spacer} from "@nextui-org/react";
-
-// export default function Form() {
-//   return (
-//     <main className="flex-col px-12 w-full">
-//       <CheckboxGroup label="Select at least 1 output format(s):">
-//         <Checkbox value="poster">Poster</Checkbox>
-//         <Checkbox value="infographic">Infographic</Checkbox>
-//         <Checkbox value="email">Email</Checkbox>
-//         <Checkbox value="video">Video</Checkbox>
-//       </CheckboxGroup>
-//       <Spacer y={12} />
-//       <CheckboxGroup label="Select target audience(s):">
-//         <Checkbox value="students-primary">Primary School</Checkbox>
-//         <Checkbox value="students-secondary">Secondary School</Checkbox>
-//         <Checkbox value="students-tertiary">Post-Secondary Institutes</Checkbox>
-//         <Checkbox value="students-university">University</Checkbox>
-//         <Checkbox value="nsmen-saf">SAF</Checkbox>
-//         <Checkbox value="nsmen-spf">SPF</Checkbox>
-//         <Checkbox value="nsmen-scdf">SCDF</Checkbox>
-//         <Checkbox value="parents">Parents</Checkbox>
-//         <Checkbox value="athletes">Athletes</Checkbox>
-//       </CheckboxGroup>
-//       <Spacer y={12} />
-//       <h2>Select reference materials:</h2>
-//     </main>
-//   )
-// }
-
 "use client"
 
 import * as React from "react"
@@ -58,10 +29,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
-import Image from 'next/image'
-
 import { Gallery } from "next-gallery"
-import { MyOverlay, OverlayProvider } from './Overlay'
+import { SelectedOverlay, OverlayProvider } from './components/SelectedOverlay'
+import FileUpload from "./components/FileUpload"
 
 const images = [
     { src: "/first.jpg", aspect_ratio: 16/9 },
@@ -196,7 +166,7 @@ export default function AIGeneratorForm() {
   return (
     <main className="flex flex-col w-full items-center">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="w-4/5 p-8 space-y-8 bg-muted rounded-lg">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="w-4/5 p-8 space-y-8 bg-background rounded-lg">
           <h1 className="text-xl text-foreground">Generate your PDE Materials</h1>
           {/* Output Format Checkboxes */}
           <FormField
@@ -301,13 +271,18 @@ export default function AIGeneratorForm() {
             <Gallery 
               {...{images, widths, ratios}} 
               lastRowBehavior="match-previous"
-              overlay={(i) => <MyOverlay index={i} />} 
+              overlay={(i) => <SelectedOverlay index={i} />} 
             />
           </OverlayProvider>
 
+          <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" />
 
-{/* 
-          <Carousel setApi={setApi} className="w-4/5">
+          <h1>&lt;EDITABLE OUTPUT MEDIA&gt;</h1>
+          <h1>&lt;EXPORT BUTTON&gt;</h1>
+
+
+
+          {/* <Carousel setApi={setApi} className="w-4/5">
             <CarouselContent>
               {images.map(({filename, title}) => {
                 return (
@@ -324,10 +299,10 @@ export default function AIGeneratorForm() {
             </CarouselContent>
             <CarouselPrevious />
             <CarouselNext />
-          </Carousel> */}
+          </Carousel>
           <div className="py-2 text-center text-sm text-muted-foreground">
             Slide {current} of {Math.ceil(count / 3)}
-          </div>
+          </div> */}
 
           {/* <Button type="submit">Submit</Button> */}
         </form>
