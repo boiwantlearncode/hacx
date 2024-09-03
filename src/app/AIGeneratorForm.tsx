@@ -43,8 +43,16 @@ const formats = [
     label: "Poster",
   },
   {
-    id: "infographic",
-    label: "Infographic",
+    id: "info-package",
+    label: "Info Package",
+  },
+  {
+    id: "resource-toolkit",
+    label: "Resource Toolkit",
+  },
+  {
+    id: "article",
+    label: "Article",
   },
   {
     id: "email",
@@ -134,7 +142,7 @@ export default function AIGeneratorForm() {
   return (
     <main className="flex flex-col w-full items-center">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="w-4/5 p-8 space-y-8 bg-background rounded-lg">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="w-4/5 py-8 px-10 space-y-8 bg-background rounded-lg">
           <h1 className="text-xl text-foreground">Generate your PDE Materials</h1>
           {/* Output Format Checkboxes */}
           <FormField

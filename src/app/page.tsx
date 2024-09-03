@@ -13,10 +13,10 @@ import EditForm from "./EditForm";
 export default function Home() {
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-16 bg-muted">
-      <Spacer y={16}></Spacer>
+    <main className="flex min-h-screen flex-col items-center p-8 bg-muted">
+      {/* <Spacer y={16}></Spacer> */}
       <section className="flex flex-col w-full items-center">
-        <Tabs defaultValue="Generate" className="w-4/5">
+        <Tabs defaultValue="Generate" className="w-5/6">
           <TabsList>
             <TabsTrigger key="Generate" value="Generate">Generate</TabsTrigger>
             <TabsTrigger key="Edit" value="Edit">Edit</TabsTrigger>
