@@ -7,48 +7,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/VerticalT
 import Spacer from "./components/Spacer";
 
 import AIGeneratorForm from "./AIGeneratorForm";
+import EditForm from "./EditForm";
 
 
 export default function Home() {
-  // Content will contain the saved information
-  const [tabs, setTabs] = useState([
-    {
-      title: "Tab 1",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-    },
-    {
-      title: "Tab 2",
-      content: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-    },
-    {
-      title: "Tab 3",
-      content: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    }
-  ]);
-
-  const addTab = () => {
-    setTabs([...tabs, {
-      title: `Tab ${tabs.length + 1}`,
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-    }]);
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center p-16 bg-muted">
       <Spacer y={16}></Spacer>
       <section className="flex flex-col w-full items-center">
-        <Tabs defaultValue="Tab 1" className="w-4/5">
+        <Tabs defaultValue="Generate" className="w-4/5">
           <TabsList>
-            {Array.from(tabs).map(({title, content}) => (
-              <TabsTrigger key={title} value={title}>{title}</TabsTrigger>
-            ))}
-            <Button variant="ghost" className="w-full h-8 mt-2" onClick={addTab}>+</Button>
+            <TabsTrigger key="Generate" value="Generate">Generate</TabsTrigger>
+            <TabsTrigger key="Edit" value="Edit">Edit</TabsTrigger>
           </TabsList>
-          {Array.from(tabs).map(({title, content}) => (
-            <TabsContent key={title} value={title} className="w-full">
+            <TabsContent key="Generate" value="Generate" className="w-full">
               <AIGeneratorForm />
             </TabsContent>
-          ))}
+            <TabsContent key="Edit" value="Edit" className="w-full">
+              <EditForm />
+            </TabsContent>
         </Tabs>
       </section>
     </main>

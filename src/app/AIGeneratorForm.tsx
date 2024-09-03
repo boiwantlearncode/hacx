@@ -20,14 +20,8 @@ import {
 import { toast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Carousel,
-  CarouselApi,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
+
+import { BsStars } from "react-icons/bs";
 
 import { Gallery } from "next-gallery"
 import { SelectedOverlay, OverlayProvider } from './components/SelectedOverlay'
@@ -60,7 +54,7 @@ const formats = [
     id: "video",
     label: "Video",
   },
-] as const
+]
 
 const audiences = [
   {
@@ -99,22 +93,7 @@ const audiences = [
     id: "athletes",
     label: "Athletes",
   },
-] as const
-
-// const images = [
-//   {
-//     filename: "first.jpg", 
-//     title: "First Image"
-//   },
-//   {
-//     filename: "second.png",
-//     title: "Second Image"
-//   },
-//   {
-//     filename: "third.png",
-//     title: "Third Image"
-//   }
-// ];
+]
 
 const FormSchema = z.object({
   formats: z.array(z.string()).refine((value) => value.some((item) => item), {
@@ -126,6 +105,8 @@ const FormSchema = z.object({
 })
 
 export default function AIGeneratorForm() {
+
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -133,6 +114,11 @@ export default function AIGeneratorForm() {
       audiences: []
     },
   })
+
+  // Handling the state of the form inputs
+  const { watch } = form
+  const watchFormats = watch("formats");
+  const watchAudiences = watch("audiences");
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
@@ -144,24 +130,6 @@ export default function AIGeneratorForm() {
       ),
     })
   }
-
-  // Carousel API
-  const [api, setApi] = React.useState<CarouselApi>()
-  const [current, setCurrent] = React.useState(0)
-  const [count, setCount] = React.useState(0)
- 
-  React.useEffect(() => {
-    if (!api) {
-      return
-    }
- 
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap() + 1)
- 
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1)
-    })
-  }, [api])
 
   return (
     <main className="flex flex-col w-full items-center">
@@ -175,7 +143,7 @@ export default function AIGeneratorForm() {
             render={() => (
               <FormItem>
                 <div className="mb-4">
-                  <FormLabel className="text-base">Select at least 1 output format(s):</FormLabel>
+                  <FormLabel className="text-base">Select at least 1 output format(s): <span className="text-red-400">*</span></FormLabel>
                 </div>
                 {formats.map((format) => (
                 <FormField
@@ -221,7 +189,7 @@ export default function AIGeneratorForm() {
             render={() => (
               <FormItem>
                 <div className="my-2">
-                  <FormLabel className="text-base">Select target audience(s):</FormLabel>
+                  <FormLabel className="text-base">Select target audience(s): <span className="text-red-400">*</span></FormLabel>
                 </div>
                 {audiences.map((audience) => (
                 <FormField
@@ -260,13 +228,19 @@ export default function AIGeneratorForm() {
               </FormItem>
             )}
           />
-          {/* Custom Audience Input Field */}
-          <div className="w-64">
-            <Label htmlFor="custom-audience">Custom Audience (Optional)</Label>
-            <Input type="custom-audience" id="custom-audience" placeholder="Your prompt" />
-          </div>
-          <h2 className="font-medium">Select reference materials:</h2>
 
+          {/* Reasons for using drugs */}
+          <div>
+            <Label htmlFor="custom-audience">Reasons the target audience use drugs</Label>
+            <Input className="w-96 mt-1" type="custom-audience" id="custom-audience" placeholder="Your prompt" />
+          </div>
+          {/* Custom Audience Input Field */}
+          <div>
+            <Label htmlFor="custom-audience">Custom Audience</Label>
+            <Input className="w-96 mt-1" type="custom-audience" id="custom-audience" placeholder="Your prompt" />
+          </div>
+
+          <h2 className="font-medium">Select reference materials:</h2>
           <OverlayProvider>
             <Gallery 
               {...{images, widths, ratios}} 
@@ -275,36 +249,12 @@ export default function AIGeneratorForm() {
             />
           </OverlayProvider>
 
+          {/* FileUpload file format limits based on output format. Will have to implement this */}
           <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" />
 
-          <h1>&lt;EDITABLE OUTPUT MEDIA&gt;</h1>
-          <h1>&lt;EXPORT BUTTON&gt;</h1>
-
-
-
-          {/* <Carousel setApi={setApi} className="w-4/5">
-            <CarouselContent>
-              {images.map(({filename, title}) => {
-                return (
-                  <CarouselItem className="basis-1/3">
-                    <Image
-                      src={`/${filename}`}
-                      width={200}
-                      height={200}
-                      alt={`${title}`}
-                    />
-                  </CarouselItem>
-                )
-              })}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-          <div className="py-2 text-center text-sm text-muted-foreground">
-            Slide {current} of {Math.ceil(count / 3)}
-          </div> */}
-
-          {/* <Button type="submit">Submit</Button> */}
+          <Button className="pr-4">
+            <BsStars className="mr-1 h-3 w-3"/>Generate
+          </Button>
         </form>
       </Form>
 
