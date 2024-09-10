@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@nextui-org/react": "^2.4.6",
     "@pdfme/common": "^4.3.2",
     "@pdfme/ui": "^4.3.2",
     "@radix-ui/react-checkbox": "^1.1.1",

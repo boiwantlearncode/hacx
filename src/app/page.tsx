@@ -43,12 +43,14 @@ export default function Login() {
               required
             />
           </div>
-          <button
-            type="submit"
-            className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition duration-300"
-          >
-            Login
-          </button>
+          <Link href="/hub">
+            <button
+              type="submit"
+              className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition duration-300"
+            >
+              Login
+            </button>
+          </Link>
         </form>
         <p className="text-center text-sm text-gray-600 mt-4">
           Don't have an account? <Link href="/register" className="text-indigo-500 hover:underline">Register</Link>
