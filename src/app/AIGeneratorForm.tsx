@@ -177,15 +177,6 @@ export default function AIGeneratorForm() {
     })
   }
 
-
-
-
-
-
-
-
-
-
   return (
     <main className="flex flex-col w-full items-center">
       <Form {...form}>
