@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from 'next/link';
 // import {NextUIProvider, Tabs, Tab, Spacer, Button} from "@nextui-org/react";
 import { Button1 } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/VerticalTabs";
@@ -20,15 +21,16 @@ export default function Home() {
           <TabsList>
             <TabsTrigger key="Generate" value="Generate">Generate</TabsTrigger>
             <TabsTrigger key="Edit" value="Edit">Edit</TabsTrigger>
+            <Link href="/"><TabsTrigger key="Logout" value="Logout">Logout</TabsTrigger></Link>
           </TabsList>
             <TabsContent key="Generate" value="Generate" className="w-full">
               <AIGeneratorForm />
             </TabsContent>
             <TabsContent key="Edit" value="Edit" className="w-full">
               <EditForm />
-            </TabsContent>
+            </TabsContent>       
         </Tabs>
-      </section>
+      </section>      
     </main>
   );
 }
