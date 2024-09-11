@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  return NextResponse.next();
+}
+
+/* export function middleware(request: NextRequest) {
   const isLoggedIn = checkAuth(request);
 
   const url = request.nextUrl.clone();
@@ -18,7 +22,7 @@ export function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
-}
+} */
 
 // Type-safe function to check authentication (mock implementation)
 function checkAuth(request: NextRequest): boolean {
