@@ -1,12 +1,12 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+// import { NextRequest, NextResponse } from 'next';
 import { runAssistant } from '../../../actions/chatbot'; // Server-side code with Azure OpenAI logic
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 interface AssistantResponse {
     response: string;
 }
 
-export async function POST(req: NextApiRequest, res: NextApiResponse<AssistantResponse | { error: string }>) {
+export async function POST(req: NextRequest, res: NextResponse<AssistantResponse | { error: string }>) {
     if (req.method === 'POST') {
         console.log("POST request has been made.");
         if (!req.body)  {
@@ -18,16 +18,24 @@ export async function POST(req: NextApiRequest, res: NextApiResponse<AssistantRe
             );
         } else {
             try {
-                console.log("TRY HERE!");
-                console.log(JSON.parse(req.body)["message"]);
-                console.log("WORKS!")
-                const assistantResponse = await runAssistant(JSON.parse(req.body)["message"]);
+                let assistantResponse;
+                req.json().then((data) => {
+                    const message = data.message.currentKey;
+                    return message;
+                }).then((message) => {
+                    console.log(`Message: ${message}`);
+                    return runAssistant(message);
+                }).then((assistantResponse) => {
+                    assistantResponse = assistantResponse;
+                })
+                
                 return NextResponse.json(
                     { message: assistantResponse },
                     {
                         status: 200,
                     }
                 )
+
             } catch (error) {
                 console.error('Error calling Azure OpenAI Assistant:', error);
                 return NextResponse.json(
