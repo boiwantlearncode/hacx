@@ -315,6 +315,8 @@ export default function AIGeneratorForm() {
                 <DropdownTrigger>
                   <Button1>{customConfirmedValue}</Button1>
                 </DropdownTrigger>
+                
+                {/* NOTE: In the future, customConfirmedValue will include all of the inputs */}
                 <DropdownMenu className="bg-white border-2 rounded border-black" selectionMode="single" selectedKeys={customConfirmedValue}
                   onSelectionChange={setCustomConfirmedValue}>
                   {filteredPrompts.map((item) => (
@@ -369,7 +371,9 @@ async function ChatBotResponse(input: string) {
     }
 
     // Parse the response as JSON
+    console.log("Before parsing");
     const data = JSON.parse(responseText);
+    console.log("Inside AIGeneratorForm.tsx");
     console.log(data.response);
   } catch (error) {
     console.error('Error parsing JSON or fetching data:', error);

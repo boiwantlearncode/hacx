@@ -1,27 +1,52 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { runAssistant } from '../../../actions/chatbot'; // Server-side code with Azure OpenAI logic
+import { NextResponse } from 'next/server';
 
 interface AssistantResponse {
     response: string;
 }
 
-export default async function POST(req: NextApiRequest, res: NextApiResponse<AssistantResponse | { error: string }>) {
+export async function POST(req: NextApiRequest, res: NextApiResponse<AssistantResponse | { error: string }>) {
     if (req.method === 'POST') {
-        const { message } = req.body;
-
-        if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
-        }
-
-        try {
-            const assistantResponse = await runAssistant(message);
-            return res.status(200).json({ response: assistantResponse });
-        } catch (error) {
-            console.error('Error calling Azure OpenAI Assistant:', error);
-            return res.status(500).json({ error: 'Failed to process request' });
+        console.log("POST request has been made.");
+        if (!req.body)  {
+            return NextResponse.json(
+                {
+                    status: 400,
+                    error: 'Message is required',
+                },
+            );
+        } else {
+            try {
+                console.log("TRY HERE!");
+                console.log(JSON.parse(req.body)["message"]);
+                console.log("WORKS!")
+                const assistantResponse = await runAssistant(JSON.parse(req.body)["message"]);
+                return NextResponse.json(
+                    { message: assistantResponse },
+                    {
+                        status: 200,
+                    }
+                )
+            } catch (error) {
+                console.error('Error calling Azure OpenAI Assistant:', error);
+                return NextResponse.json(
+                    {
+                        status: 500,
+                        error: 'Failed to process request'
+                    }
+                )
+            }
         }
     } else {
-        res.setHeader('Allow', ['POST']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+        return NextResponse.json(
+            { message: `Method ${req.method} Not Allowed`},
+            {
+                status: 405,
+                headers: {
+                    "Allow": "POST"
+                },
+            }
+        );
     }
 }
