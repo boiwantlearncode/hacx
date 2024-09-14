@@ -1,22 +1,46 @@
-const { OpenAIClient } = require("@azure/openai");
-const { AzureKeyCredential } = require("@azure/core-auth");
+const { AzureOpenAI } = require('openai');
 
-const endpoint = "https://genai111111.openai.azure.com/";
-//process.env.AZURE_ENDPOINT;
-const azureApiKey = "ac957d94e99940f0b9f894ba98e1c4c3";
-//process.env.AZURE_API_KEY;
-console.log(azureApiKey);
-            
-export default async function GenerateImage(prompt: string) {
-    const n = 1;
-    const size = "1024x1024";
-    console.log("== Batch Image Generation ==");
-  
-    const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey));
-    const deploymentName = "dall-e-3";
-    const results = await client.getImages(deploymentName, prompt, { n, size });
-  
-    for (const image of results.data) {
-      console.log(`Image generation result URL: ${image.url}`);
-    }
+// Get environment variables
+const azureOpenAIKey = process.env.AZURE_OPENAI_API_KEY;
+const azureOpenAIEndpoint = process.env.AZURE_OPENAI_IMAGE_ENDPOINT;
+const azureOpenAIVersion = "2024-05-01-preview";
+
+// Check environment variables
+if (!azureOpenAIKey || !azureOpenAIEndpoint) {
+    throw new Error("Please set AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT in your environment variables.");
 }
+
+// Get Azure SDK client
+const getClient = () => {
+    const imageClient = new AzureOpenAI({
+        endpoint: azureOpenAIEndpoint,
+        apiVersion: azureOpenAIVersion,
+        apiKey: azureOpenAIKey,
+    });
+    return imageClient;
+};
+
+const imageClient = getClient();
+
+// Function to generate images
+export const generator = async (prompt: string, n: number = 1, size: string = "1024x1024", quality: string = "hd", style: string = "vivid") => {
+    try {
+        console.log("== Generating Images ==");
+
+        // Request for image generation
+        const results = await imageClient.images.generate({
+            prompt,
+            n,
+            size,
+            quality,
+            style
+        });
+
+        const generatedImages = results.data.map((image: any) => image.data);
+        
+        console.log(`Generated Image URLs: ${JSON.stringify(results)}`);
+        return generatedImages;
+    } catch (error: any) {
+        console.error(`Error generating images: ${error.message}`);
+    }
+};

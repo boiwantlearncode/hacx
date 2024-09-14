@@ -1,10 +1,8 @@
 const { AzureOpenAI } = require('openai');
 
 // Get environment variables
-// const azureOpenAIKey = "ac957d94e99940f0b9f894ba98e1c4c3"
-const azureOpenAIKey = process.env.AZURE_API_KEY;
-// const azureOpenAIEndpoint = "https://genai111111.openai.azure.com/";
-const azureOpenAIEndpoint = process.env.AZURE_ENDPOINT;
+const azureOpenAIKey = process.env.AZURE_OPENAI_API_KEY;
+const azureOpenAIEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const azureOpenAIVersion = "2024-05-01-preview";
 
 // Check env variables
@@ -27,7 +25,7 @@ const assistantsClient = getClient();
 const options = {
     model: "GenAI", // replace with model deployment name
     name: "Preventive Drug Education",
-    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. Split content into separate sections, each containing text and descriptions of accompanying images.",
+    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. Split content into separate sections, each containing text and descriptions of accompanying images. Help generate promotional preventive drug education materials based on the target audience specified. Split content into separate sections, each containing text and descriptions of accompanying images. Make it such that it's in the following format: Section Title, Section Body, Accompanying Image",
     tools: [{"type":"file_search"}],
     
     tool_resources: {"file_search":{"vector_store_ids":["vs_ahwovNoykUNt0WiRX3NDXlwg"]}},
@@ -95,7 +93,9 @@ export const runAssistant = async (message: string) => {
             const messagesResponse = await assistantsClient.beta.threads.messages.list(
                 assistantThread.id
             );
-            console.log(`Messages in the thread: ${JSON.stringify(messagesResponse)}`);
+            const resulting_text = JSON.stringify(messagesResponse["body"]["data"][0]["content"][0]["text"]["value"])
+            console.log(`Messages in the thread: ${resulting_text}`);
+            return resulting_text;
         } else {
             console.log(`Run status is ${runStatus}, unable to fetch messages.`);
         }

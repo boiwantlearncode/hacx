@@ -58,8 +58,9 @@ const customPrompts = [
   { prompt: "Blue Lock styled" },
   { prompt: "Lookism styled" },
   { prompt: "Has guy smoking weed" },
+  { prompt: "People playing sports" },
 ];
-import GenerateImage from '../../actions/imager'
+
 const widths = [500, 1000, 1600]
 const ratios = [2.2, 4, 6, 8]
 
@@ -341,7 +342,7 @@ export default function AIGeneratorForm() {
           {/* FileUpload file format limits based on output format. Will have to implement this */}
           <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" />
 
-          <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => ChatBotResponse(customConfirmedValue)}>
+          <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {ChatBotResponse(customConfirmedValue); GenerateImage(customConfirmedValue)}}>
             <BsStars className="mr-1 h-3 w-3" />Generate
           </Button>
         </form>
@@ -353,6 +354,38 @@ export default function AIGeneratorForm() {
 async function ChatBotResponse(input: string) {
   try {
     const response = await fetch('../api/chatbot', { // Ensure the correct API route
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: input }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Check if the response has content before trying to parse it
+    const responseText = await response.text();
+    if (!responseText) {
+      throw new Error('Empty response from server');
+    }
+
+    // Parse the response as JSON
+    console.log("Before parsing");
+    const data = JSON.parse(responseText);
+    console.log(data);
+    console.log("Inside AIGeneratorForm.tsx");
+    console.log(data.response);
+    return data.response;
+  } catch (error) {
+    console.error('Error parsing JSON or fetching data:', error);
+  }
+}
+
+async function GenerateImage(input: string) {
+  try {
+    const response = await fetch('../api/imager', { // Ensure the correct API route
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
