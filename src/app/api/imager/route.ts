@@ -20,7 +20,7 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
             try {
                 let assistantResponse;
                 req.json().then((data) => {
-                    const message = data.message.currentKey;
+                    const message = data.message;
                     return message;
                 }).then((message) => {
                     console.log(`Message: ${message}`);
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
                 }).then((assistantResponse) => {
                     assistantResponse = assistantResponse;
                 })
+                console.log(`Assistant Response: ${assistantResponse}`);
                 
                 return NextResponse.json(
                     { message: assistantResponse },

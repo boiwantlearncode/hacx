@@ -2,7 +2,7 @@
 import { runAssistant } from '../../../actions/chatbot'; // Server-side code with Azure OpenAI logic
 import { NextRequest, NextResponse } from 'next/server';
 
-interface AssistantResponse {
+type AssistantResponse = {
     response: string;
 }
 
@@ -20,10 +20,10 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
             try {
                 let assistantResponse;
                 req.json().then((data) => {
-                    const message = data.message.currentKey;
+                    const message = data.message;
                     return message;
                 }).then((message) => {
-                    console.log(`Message: ${message}`);
+                    console.log(`Message:\n${message}`);
                     return runAssistant(message);
                 }).then((assistantResponse) => {
                     assistantResponse = assistantResponse;

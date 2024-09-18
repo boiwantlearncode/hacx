@@ -9,6 +9,7 @@ import { z } from "zod"
 
 import { Button1 } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 import { Button } from "@nextui-org/button";
 
@@ -34,11 +35,29 @@ import {
 
 import { toast } from "@/components/ui/use-toast"
 
-import { BsStars } from "react-icons/bs";
+import { BsEmojiAstonishedFill, BsStars } from "react-icons/bs";
 
 import { Gallery } from "next-gallery"
 import { SelectedOverlay, OverlayProvider } from './components/SelectedOverlay'
 import FileUpload from "./components/FileUpload"
+
+/*              Documentation reference                */
+
+/*
+  Input variables that will be bundled together into prompt.
+  (1) watchFormats
+  (2) watchAudiences
+  (3) textCustomValue
+  (4) textReasonValue
+  (5) dropdownReasonValue
+                                
+*/
+
+type checkboxType = {
+  id: string,
+  label: string
+}
+
 
 const images = [
   { src: "/first.jpg", aspect_ratio: 16 / 9 },
@@ -48,13 +67,13 @@ const images = [
 ]
 
 const reasonPrompts = [
-  { prompt: "Continue with custom input" },
+  { prompt: "View previously used prompts" },
   { prompt: "Too high" },
   { prompt: "Peer pressure" },
 ];
 
 const customPrompts = [
-  { prompt: "Continue with custom input" },
+  { prompt: "View previously used prompts" },
   { prompt: "Blue Lock styled" },
   { prompt: "Lookism styled" },
   { prompt: "Has guy smoking weed" },
@@ -64,7 +83,7 @@ const customPrompts = [
 const widths = [500, 1000, 1600]
 const ratios = [2.2, 4, 6, 8]
 
-const formats = [
+const formats: checkboxType[] = [
   {
     id: "poster",
     label: "Poster",
@@ -91,51 +110,55 @@ const formats = [
   },
 ]
 
-const audiences = [
+const audiences: checkboxType[] = [
   {
-    id: "primary",
-    label: "Primary",
+    id: "All Students",
+    label: "Students (General)",
   },
   {
-    id: "secondary",
-    label: "Secondary",
+    id: "Primary School Students",
+    label: "Primary School",
   },
   {
-    id: "tertiary",
-    label: "Tertiary",
+    id: "Secondary School Students",
+    label: "Secondary School",
   },
   {
-    id: "university",
+    id: "Tertiary Level Students",
+    label: "Tertiary Level",
+  },
+  {
+    id: "University Students",
     label: "University",
   },
   {
-    id: "saf",
-    label: "SAF",
+    id: "SAF (Singapore Armed Forces)",
+    label: "SAF (Singapore Armed Forces)",
   },
   {
-    id: "spf",
-    label: "SPF",
+    id: "SPF (Singapore Police Force)",
+    label: "SPF (Singapore Police Force)",
   },
   {
-    id: "scdf",
-    label: "SCDF",
+    id: "SCDF (Singapore Civil Defence Force)",
+    label: "SCDF (Singapore Civil Defence Force)",
   },
   {
-    id: "parents",
+    id: "Parents",
     label: "Parents",
   },
   {
-    id: "athletes",
+    id: "Athletes",
     label: "Athletes",
   },
 ]
 
 const FormSchema = z.object({
   formats: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one output format.",
+    message: "You have to select one output format.",
   }),
   audiences: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one target audience.",
+    message: "You have to select one target audience.",
   }),
 })
 
@@ -153,18 +176,13 @@ export default function AIGeneratorForm() {
   const watchFormats = watch("formats");
   const watchAudiences = watch("audiences");
 
-  const [reasonValue, setReasonValue] = useState<string>('');
-  const [customValue, setCustomValue] = useState<string>('');
-  const [reasonConfirmedValue, setReasonConfirmedValue] = useState<string>('Continue with custom input');
-  const [customConfirmedValue, setCustomConfirmedValue] = useState<string>('Continue with custom input');
+  const [textCustomValue, setTextCustomValue] = useState<string>('');
+  const [textReasonValue, setTextReasonValue] = useState<string>('');
+  const [dropdownReasonValue, setDropdownReasonValue] = useState<string>(reasonPrompts[0].prompt);
 
   // Filter prompts based on input value
   const filterPrompts = reasonPrompts.filter(item =>
-    item.prompt.toLowerCase().includes(reasonValue.toLowerCase())
-  );
-
-  const filteredPrompts = customPrompts.filter(item =>
-    item.prompt.toLowerCase().includes(customValue.toLowerCase())
+    item.prompt.toLowerCase().includes(textReasonValue.toLowerCase())
   );
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -204,7 +222,23 @@ export default function AIGeneratorForm() {
                           className="flex flex-row items-start space-x-3 space-y-0"
                         >
                           <FormControl>
-                            <Checkbox
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={""}
+                              className="flex flex-col space-y-1"
+                            >
+                                <FormItem key={format.id} className="flex items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <RadioGroupItem value={format.id} />
+                                  </FormControl>
+                                  {/* <FormLabel className="font-normal">
+                                    {format.label}
+                                  </FormLabel> */}
+                                </FormItem>
+
+                            </RadioGroup>
+
+                            {/* <Checkbox
                               checked={field.value?.includes(format.id)}
                               onCheckedChange={(checked) => {
                                 return checked
@@ -215,7 +249,7 @@ export default function AIGeneratorForm() {
                                     )
                                   )
                               }}
-                            />
+                            /> */}
                           </FormControl>
                           <FormLabel className="font-normal">
                             {format.label}
@@ -276,19 +310,32 @@ export default function AIGeneratorForm() {
             )}
           />
 
-          {/* Reasons for using drugs */}
+          {/* Custom Audience Input Field */}
           <div>
-            <Label htmlFor="reasons">Reasons the target audience use drugs</Label>
-            <Input className="w-96 mt-1" type="text" id="reasons" placeholder="Enter reasons" value={reasonValue}
-              onChange={(e) => setReasonValue(e.target.value)} />
+            <Label htmlFor="custom-audience">Custom Audience</Label>
+            <Input
+              className="w-96 mt-1"
+              type="text"
+              id="custom-audience"
+              placeholder="Your prompt"
+              value={textCustomValue}
+              onChange={(e) => setTextCustomValue(e.target.value)}
+            />
+          </div>
+
+          {/* Reasons the target audience uses drugs */}
+          <div>
+            <Label htmlFor="reasons">Reasons the target audience uses drugs</Label>
+            <Input className="w-96 mt-1" type="text" id="reasons" placeholder="Enter reasons" value={textReasonValue}
+              onChange={(e) => setTextReasonValue(e.target.value)} />
             {/* Show DropdownMenu if input is not empty */}
             {(
               <Dropdown>
                 <DropdownTrigger>
-                  <Button1>{reasonConfirmedValue}</Button1>
+                  <Button1>{dropdownReasonValue}</Button1>
                 </DropdownTrigger>
-                <DropdownMenu className="bg-white border-2 rounded border-black" selectionMode="single" selectedKeys={reasonConfirmedValue}
-                  onSelectionChange={setReasonConfirmedValue}>
+                <DropdownMenu className="bg-white border-2 rounded border-black" selectionMode="single" selectedKeys={dropdownReasonValue}
+                  onSelectionChange={setDropdownReasonValue}>
                   {filterPrompts.map((item) => (
                     <DropdownItem key={item.prompt} className="border-none hover:bg-slate-200">
                       {item.prompt}
@@ -299,36 +346,7 @@ export default function AIGeneratorForm() {
             )}
           </div>
 
-          {/* Custom Audience Input Field */}
-          <div>
-            <Label htmlFor="custom-audience">Custom Audience</Label>
-            <Input
-              className="w-96 mt-1"
-              type="text"
-              id="custom-audience"
-              placeholder="Your prompt"
-              value={customValue}
-              onChange={(e) => setCustomValue(e.target.value)}
-            />
-            {/* Show DropdownMenu if input is not empty */}
-            {(
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button1>{customConfirmedValue}</Button1>
-                </DropdownTrigger>
-                
-                {/* NOTE: In the future, customConfirmedValue will include all of the inputs */}
-                <DropdownMenu className="bg-white border-2 rounded border-black" selectionMode="single" selectedKeys={customConfirmedValue}
-                  onSelectionChange={setCustomConfirmedValue}>
-                  {filteredPrompts.map((item) => (
-                    <DropdownItem key={item.prompt} className="border-none hover:bg-slate-200">
-                      {item.prompt}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            )}
-          </div>
+
 
           <h2 className="font-medium">Select reference materials:</h2>
           <OverlayProvider>
@@ -342,7 +360,9 @@ export default function AIGeneratorForm() {
           {/* FileUpload file format limits based on output format. Will have to implement this */}
           <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" />
 
-          <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {ChatBotResponse(customConfirmedValue); GenerateImage(customConfirmedValue)}}>
+          {/* <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {BundleInputs(watchFormats, watchAudiences, textCustomValue, textReasonValue, dropdownReasonValue); ChatBotResponse(textCustomValue); GenerateImage(textCustomValue)}}> */}
+          <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {BundleInputs(watchFormats, watchAudiences, textCustomValue, textReasonValue, dropdownReasonValue)}}>
+          {/* <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {GenerateImage("HI")}}> */}
             <BsStars className="mr-1 h-3 w-3" />Generate
           </Button>
         </form>
@@ -352,6 +372,8 @@ export default function AIGeneratorForm() {
 }
 
 async function ChatBotResponse(input: string) {
+  console.log("ChatBotResponse called!")
+  console.log(input);
   try {
     const response = await fetch('../api/chatbot', { // Ensure the correct API route
       method: 'POST',
@@ -384,6 +406,7 @@ async function ChatBotResponse(input: string) {
 }
 
 async function GenerateImage(input: string) {
+  console.log(input)
   try {
     const response = await fetch('../api/imager', { // Ensure the correct API route
       method: 'POST',
@@ -413,3 +436,45 @@ async function GenerateImage(input: string) {
   }
 }
 
+async function BundleInputs(formats: string[], audiences: string[], textCustomValue: string, textReasonValue: string, dropdownReasonValue: string) {
+
+  // console.log over here look at browser!!!
+  const prompt: string = `
+    Consider the following information and generate the necessary materials that is appropriate for all the target audience listed:
+    Target audiences: ${audiences.join(" and ") || "NIL"}
+    Additional target audience: ${textCustomValue || "NIL"}
+    Reasons the target audience use drugs: ${textReasonValue || "NIL"}
+  `
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+    .trim();
+  console.log("BRUH");
+  console.log(formats);
+
+  formats.forEach((format) => {
+    console.log("LOOK OVER HERE");
+    console.log(format);
+    switch (format) {
+      case "poster":
+        console.log("In construction");
+        break;
+      case "info-package": // Only one we have implemented
+        console.log(prompt);
+        ChatBotResponse(prompt);
+        break;
+      case "resource-toolkit":
+        console.log("In construction");
+        break;
+      case "article":
+        console.log("In construction");
+        break;
+      case "email":
+        console.log("In construction");
+        break;
+      case "video":
+        console.log("In construction");
+        break;
+    }
+  });
+}

@@ -28,6 +28,7 @@ const imageClient = getClient();
 export const generator = async (prompt: string, n: number = 1, size: string = "1024x1024", quality: string = "hd", style: string = "natural") => {
     try {
         console.log("== Generating Images ==");
+        console.log("Prompt: ", prompt);
 
         // Request for image generation
         const results = await imageClient.images.generate({
