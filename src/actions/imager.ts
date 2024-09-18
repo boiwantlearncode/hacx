@@ -2,8 +2,9 @@ const { AzureOpenAI } = require('openai');
 
 // Get environment variables
 const azureOpenAIKey = process.env.AZURE_OPENAI_API_KEY;
-const azureOpenAIEndpoint = process.env.AZURE_OPENAI_IMAGE_ENDPOINT;
+const azureOpenAIEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const azureOpenAIVersion = "2024-05-01-preview";
+const deploymentName = "Dalle3"
 
 // Check environment variables
 if (!azureOpenAIKey || !azureOpenAIEndpoint) {
@@ -16,6 +17,7 @@ const getClient = () => {
         endpoint: azureOpenAIEndpoint,
         apiVersion: azureOpenAIVersion,
         apiKey: azureOpenAIKey,
+        deployment: deploymentName,
     });
     return imageClient;
 };
@@ -23,17 +25,21 @@ const getClient = () => {
 const imageClient = getClient();
 
 // Function to generate images
-export const generator = async (prompt: string, n: number = 1, size: string = "1024x1024", quality: string = "hd", style: string = "vivid") => {
+export const generator = async (prompt: string, n: number = 1, size: string = "1024x1024", quality: string = "hd", style: string = "natural") => {
     try {
         console.log("== Generating Images ==");
 
         // Request for image generation
         const results = await imageClient.images.generate({
+            deploymentName,
             prompt,
             n,
             size,
             quality,
-            style
+            style,
+            contentFilter: {
+                severity: "high"
+            }
         });
 
         const generatedImages = results.data.map((image: any) => image.data);
