@@ -7,15 +7,17 @@ import {
   RadioGroup, Radio,
   Button,
   Input,
-  Dropdown, DropdownMenu, DropdownItem, DropdownTrigger
+  Dropdown, DropdownMenu, DropdownItem, DropdownTrigger,
+  Spinner
 } from "@nextui-org/react";
 
-import {Selection} from "@react-types/shared";
+import type { Selection } from "@react-types/shared";
 
 import { BsEmojiAstonishedFill, BsStars } from "react-icons/bs";
 
 import { Gallery } from "next-gallery"
 import { SelectedOverlay, OverlayProvider } from './components/SelectedOverlay'
+import Spacer from "./components/Spacer";
 // import FileUpload from "./components/FileUpload"
 
 /*              Documentation reference                */
@@ -61,27 +63,27 @@ const ratios = [2.2, 4, 6, 8]
 
 const formats: radioType[] = [
   {
-    id: "poster",
+    id: "Poster",
     label: "Poster",
   },
   {
-    id: "info-package",
+    id: "Info Package",
     label: "Info Package",
   },
   {
-    id: "resource-toolkit",
+    id: "Resource Toolkit",
     label: "Resource Toolkit",
   },
   {
-    id: "article",
+    id: "Article",
     label: "Article",
   },
   {
-    id: "email",
+    id: "Email",
     label: "Email",
   },
   {
-    id: "video",
+    id: "Video",
     label: "Video",
   },
 ]
@@ -108,16 +110,16 @@ const audiences: radioType[] = [
     label: "University",
   },
   {
-    id: "SAF (Singapore Armed Forces)",
-    label: "SAF (Singapore Armed Forces)",
+    id: "Singapore Armed Forces",
+    label: "Singapore Armed Forces",
   },
   {
-    id: "SPF (Singapore Police Force)",
-    label: "SPF (Singapore Police Force)",
+    id: "Singapore Police Force",
+    label: "Singapore Police Force",
   },
   {
-    id: "SCDF (Singapore Civil Defence Force)",
-    label: "SCDF (Singapore Civil Defence Force)",
+    id: "Singapore Civil Defence Force",
+    label: "Singapore Civil Defence Force",
   },
   {
     id: "Parents",
@@ -127,24 +129,25 @@ const audiences: radioType[] = [
     id: "Athletes",
     label: "Athletes",
   },
+  {
+    id: "Custom (Specify)",
+    label: "Custom (Specify)",
+  },
 ]
 
 export default function AIGeneratorForm() {
 
   // Handling the state of the form inputs
 
-  const [radioFormat, setRadioFormat] = useState<string>('');
-  const [radioAudience, setRadioAudience] = useState<string>('');
+  const [radioFormat, setRadioFormat] = useState<string>('Info Package');
+  const [radioAudience, setRadioAudience] = useState<string>('All Students');
   const [textCustom, setTextCustom] = useState<string>('');
   const [textReasons, setTextReasons] = useState<string>('');
   // const [dropdownSelectedReason, setDropdownSelectedReason] = useState<string>(reasonPrompts[0].prompt);
   const [dropdownSelectedReason, setDropdownSelectedReason] = useState<Selection>(new Set([reasonPrompts[0].prompt]));
-
-  // Filter prompts based on input value
-  // const filterPrompts = reasonPrompts.filter(item =>
-  //   item.prompt.toLowerCase().includes(textReasonValue.toLowerCase())
-  // );
-
+  const [loading, setLoading] = useState<boolean>(false);
+  const [completed, setCompleted] = useState<boolean>(false);
+  const [generatedFormat, setGeneratedFormat] = useState<string>('');
 
   return (
     <main className="flex flex-col w-full items-center">
@@ -162,7 +165,7 @@ export default function AIGeneratorForm() {
           }
         </RadioGroup>
         <RadioGroup
-          label="Select target audience(s): "
+          label="Select target audience: "
           value={radioAudience}
           onValueChange={setRadioAudience}
         >
@@ -172,63 +175,74 @@ export default function AIGeneratorForm() {
             ))
           }
         </RadioGroup>
-        <Input
-          key="textCustom"
-          type="text"
-          label="Custom target audience"
-          labelPlacement="outside"
-          placeholder=""
-          description="Enter any target audience that are not listed above."
-          value={textCustom}
-          onValueChange={setTextCustom}
-        />
+        <Spacer y={6}/>
+        {radioAudience == "Custom (Specify)" ? 
+          <Input
+            key="textCustom"
+            type="text"
+            label="Insert custom target audience"
+            labelPlacement="outside"
+            placeholder="Enter any target audience that is not listed above"
+            value={textCustom}
+            onValueChange={setTextCustom}
+          /> : null
+        }
+        <Spacer y={24}/>
         <Input
           key="textReasons"
           type="text"
           label="Reasons for drug usage"
           labelPlacement="outside"
-          placeholder=""
-          description="Enter any reason(s) that the target audience engage in drug usage."
+          placeholder="Enter any reason(s) that the target audience engage in drug usage."
           value={textReasons}
           onValueChange={setTextReasons}
         />
-        <h2>View previously used prompts</h2>
+        <h3>or use previously used prompts</h3>
         <Dropdown>
           <DropdownTrigger>
-            <Button>{dropdownSelectedReason}</Button>
+            <Button variant="faded">{dropdownSelectedReason}</Button>
           </DropdownTrigger>
           <DropdownMenu 
-            className="bg-white border-2 rounded border-black" 
+            disallowEmptySelection
             selectionMode="single" 
             selectedKeys={dropdownSelectedReason}
             onSelectionChange={setDropdownSelectedReason}
+            variant="faded"
           >
             {reasonPrompts.map((item) => (
-              <DropdownItem key={item.prompt} className="border-none hover:bg-slate-200">
+              <DropdownItem key={item.prompt}>
                 {item.prompt}
               </DropdownItem>
             ))}
           </DropdownMenu>
         </Dropdown>
+        <h2 className="font-medium">Select reference materials:</h2>
+        <OverlayProvider>
+          <Gallery
+            {...{ images, widths, ratios }}
+            lastRowBehavior="match-previous"
+            overlay={(i) => <SelectedOverlay index={i} />}
+          />
+        </OverlayProvider>
 
       </section>
 
-      <h2 className="font-medium">Select reference materials:</h2>
-      <OverlayProvider>
-        <Gallery
-          {...{ images, widths, ratios }}
-          lastRowBehavior="match-previous"
-          overlay={(i) => <SelectedOverlay index={i} />}
-        />
-      </OverlayProvider>
 
       {/* FileUpload file format limits based on output format. Will have to implement this */}
       {/* <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" /> */}
 
-      {/* <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {BundleInputs(watchFormats, watchAudiences, textCustomValue, textReasonValue, dropdownReasonValue); ChatBotResponse(textCustomValue); GenerateImage(textCustomValue)}}> */}
-      <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>)}}>
-      {/* <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => {GenerateImage("HI")}}> */}
-        <BsStars className="mr-1 h-3 w-3" />Generate
+      {completed && <h2 className="text-green-700 font-semibold mt-4">{generatedFormat} has been generated! View the result in the "Edit" tab.</h2>}
+      <Button isDisabled={loading} className="pr-4 my-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={async () => 
+        {
+          setCompleted(false);
+          setLoading(true);
+          setGeneratedFormat(radioFormat)
+          await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>);
+          setLoading(false);
+          setCompleted(true);
+        }
+      }>
+        {loading ? <Spinner color="default" size="sm" /> : <BsStars className="mr-1 h-3 w-3" />}Generate
       </Button>
     </main>
   )
@@ -252,17 +266,15 @@ async function ChatBotResponse(input: string) {
 
     // Check if the response has content before trying to parse it
     const responseText = await response.text();
+
     if (!responseText) {
       throw new Error('Empty response from server');
     }
 
     // Parse the response as JSON
-    console.log("Before parsing");
-    const data = JSON.parse(responseText);
+    const data = JSON.parse(responseText).message;
     console.log(data);
-    console.log("Inside AIGeneratorForm.tsx");
-    console.log(data.response);
-    return data.response;
+    return data;
   } catch (error) {
     console.error('Error parsing JSON or fetching data:', error);
   }
@@ -299,15 +311,15 @@ async function GenerateImage(input: string) {
   }
 }
 
-async function BundleInputs(format: string, audience: string, textCustomValue: string, textReasonValue: string, dropdownSelectedReason: Set<string>) {
+async function BundleInputs(format: string, audience: string, customAudience: string, reason: string, selectedReason: Set<string>) {
 
   // console.log over here look at browser!!!
   const prompt: string = `
-    Consider the following information and generate the necessary materials that is appropriate for all the target audience listed:
-    Target audiences: ${audience || "NIL"}
-    Additional target audience: ${textCustomValue || "NIL"}
-    Reasons the target audience use drugs: ${textReasonValue || "NIL"}
-    Additional reasons the target audience use drugs: ${dropdownSelectedReason.values().next().value || "NIL"}
+    Consider the following information and generate the necessary materials that is appropriate for all the target audience listed.
+    You should consider the background of the target audience and the potential ways they might get involved in drug usage, and address these issues in your response.
+    Target audience: ${audience === "Custom (Specify)" ? customAudience : audience}
+    Reasons the target audience use drugs: ${reason || "NIL"}
+    Additional reasons the target audience use drugs: ${selectedReason.values().next().value || "NIL"}
   `
     .split('\n')
     .map(line => line.trim())
@@ -315,23 +327,23 @@ async function BundleInputs(format: string, audience: string, textCustomValue: s
     .trim();
 
   switch (format) {
-    case "poster":
+    case "Poster":
       console.log("In construction");
       break;
-    case "info-package": // Only one we have implemented
+    case "Info Package": // Only one we have implemented
       console.log(prompt);
-      ChatBotResponse(prompt);
+      await ChatBotResponse(prompt);
       break;
-    case "resource-toolkit":
+    case "Resource Toolkit":
       console.log("In construction");
       break;
-    case "article":
+    case "Article":
       console.log("In construction");
       break;
-    case "email":
+    case "Email":
       console.log("In construction");
       break;
-    case "video":
+    case "Video":
       console.log("In construction");
       break;
   }

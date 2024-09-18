@@ -18,20 +18,11 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
             );
         } else {
             try {
-                let assistantResponse;
-                req.json().then((data) => {
-                    const message = data.message;
-                    return message;
-                }).then((message) => {
-                    console.log(`Message: ${message}`);
-                    return generator(message);
-                }).then((assistantResponse) => {
-                    assistantResponse = assistantResponse;
-                })
-                console.log(`Assistant Response: ${assistantResponse}`);
+                const data = await req.json();
+                const imageGenerated = await generator(data.message);
                 
                 return NextResponse.json(
-                    { message: assistantResponse },
+                    { message: imageGenerated },
                     {
                         status: 200,
                     }
