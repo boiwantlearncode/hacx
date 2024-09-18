@@ -25,7 +25,7 @@ const assistantsClient = getClient();
 const options = {
     model: "GenAI", // replace with model deployment name
     name: "Preventive Drug Education",
-    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. Split content into separate sections, each containing text and descriptions of accompanying images. Help generate promotional preventive drug education materials based on the target audience specified. Split content into separate sections, each containing text and descriptions of accompanying images. Make it such that it's in the following format: Section Title, Section Body, Accompanying Image",
+    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. Split content into separate sections, each containing text and descriptions of accompanying images. Make it such that it's in the following format: Section Title, Section Body, Accompanying Image",
     tools: [{"type":"file_search"}],
     
     tool_resources: {"file_search":{"vector_store_ids":["vs_ahwovNoykUNt0WiRX3NDXlwg"]}},
