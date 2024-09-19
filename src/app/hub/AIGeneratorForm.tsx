@@ -20,17 +20,10 @@ import { SelectedOverlay, OverlayProvider } from './components/SelectedOverlay'
 import Spacer from "./components/Spacer";
 // import FileUpload from "./components/FileUpload"
 
-/*              Documentation reference                */
-
-/*
-  Input variables that will be bundled together into prompt.
-  (1) watchFormats
-  (2) watchAudiences
-  (3) textCustomValue
-  (4) textReasonValue
-  (5) dropdownReasonValue
-                                
-*/
+// import { usePDFStore } from '@/lib/store';
+// import type { PDFState } from '@/lib/store';
+// import { shallow } from 'zustand/shallow';
+import { usePDFStore } from '@/providers/pdf-store-provider';
 
 type radioType = {
   id: string,
@@ -143,11 +136,15 @@ export default function AIGeneratorForm() {
   const [radioAudience, setRadioAudience] = useState<string>('All Students');
   const [textCustom, setTextCustom] = useState<string>('');
   const [textReasons, setTextReasons] = useState<string>('');
-  // const [dropdownSelectedReason, setDropdownSelectedReason] = useState<string>(reasonPrompts[0].prompt);
   const [dropdownSelectedReason, setDropdownSelectedReason] = useState<Selection>(new Set([reasonPrompts[0].prompt]));
-  const [loading, setLoading] = useState<boolean>(false);
-  const [completed, setCompleted] = useState<boolean>(false);
-  const [generatedFormat, setGeneratedFormat] = useState<string>('');
+  const [generatedFormat, setGeneratedFormat] = useState<string>('Info Package');
+
+  const { text, setText, loading, setLoading, completed, setCompleted } = usePDFStore(
+    (state) => state,
+  )
+
+  React.useEffect(() => {
+  }, [loading, completed]);
 
   return (
     <main className="flex flex-col w-full items-center">
@@ -237,11 +234,13 @@ export default function AIGeneratorForm() {
           setCompleted(false);
           setLoading(true);
           setGeneratedFormat(radioFormat)
-          await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>);
+          const generatedText = await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>);
+          setText(generatedText);
           setLoading(false);
           setCompleted(true);
         }
       }>
+        {/* Keep the spinner even when switch tabs */}
         {loading ? <Spinner color="default" size="sm" /> : <BsStars className="mr-1 h-3 w-3" />}Generate
       </Button>
     </main>
@@ -250,7 +249,7 @@ export default function AIGeneratorForm() {
 
 async function ChatBotResponse(input: string) {
   console.log("ChatBotResponse called!")
-  console.log(input);
+  // console.log(input);
   try {
     const response = await fetch('../api/chatbot', { // Ensure the correct API route
       method: 'POST',
@@ -273,7 +272,7 @@ async function ChatBotResponse(input: string) {
 
     // Parse the response as JSON
     const data = JSON.parse(responseText).message;
-    console.log(data);
+    // console.log(data);
     return data;
   } catch (error) {
     console.error('Error parsing JSON or fetching data:', error);
@@ -332,8 +331,7 @@ async function BundleInputs(format: string, audience: string, customAudience: st
       break;
     case "Info Package": // Only one we have implemented
       console.log(prompt);
-      await ChatBotResponse(prompt);
-      break;
+      return await ChatBotResponse(prompt);
     case "Resource Toolkit":
       console.log("In construction");
       break;
