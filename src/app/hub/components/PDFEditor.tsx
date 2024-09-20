@@ -17,79 +17,92 @@ export default function PDFEditor() {
   )
 
   useEffect(() => {
-    const objContent: { [key: string]: string } = JSON.parse(JSON.parse(text.replace(/```json|```/g, '').trim()));
-    console.log("Keys: ", Object.keys(objContent));
-    const template: Template = {
-      basePdf: BLANK_PDF,
-      schemas: [
-        {
-          "title": {
-              type: 'text',
-              position: { x: 0, y: 10 },
-              width: 210,
-              height: 24,
-              fontSize: 24,
-              content: objContent["Title"]
-          },
-          "introduction": {
-              type: 'text',
-              position: { x: 0, y: 30 },
-              width: 210,
-              height: 12,
-              fontSize: 12,
-              content: objContent["Introduction"]
-          },
-          "sectionTitle1": {
-              type: 'text',
-              position: { x: 0, y: 50 },
-              width: 210,
-              height: 18,
-              fontSize: 18,
-              content: objContent["SectionTitle1"]
-          },
-          "sectionContent1": {
-              type: 'text',
-              position: { x: 0, y: 60 },
-              width: 210,
-              height: 12,
-              fontSize: 12,
-              content: objContent["SectionContent1"]
-          },
-          "sectionTitle2": {
-              type: 'text',
-              position: { x: 0, y: 90 },
-              width: 210,
-              height: 18,
-              fontSize: 18,
-              content: objContent["SectionTitle2"]
-          },
-          "sectionContent2": {
-              type: 'text',
-              position: { x: 0, y: 100 },
-              width: 210,
-              height: 12,
-              fontSize: 12,
-              content: objContent["SectionContent2"]
-          },
-          "conclusion": {
-              type: 'text',
-              position: { x: 0, y: 240 },
-              width: 210,
-              height: 12,
-              fontSize: 12,
-              content: objContent["Conclusion"]
-          },
-          "footer": {
-              type: 'text',
-              position: { x: 0, y: 270 },
-              width: 210,
-              height: 20,
-              fontSize: 10,
-              content: 'Made with love by the HACX group.'
+    let objContent: { [key: string]: string };
+    let template: Template;
+
+    try {
+      objContent= JSON.parse(JSON.parse(text.replace(/```json|```/g, '').trim()));
+      console.log("Keys: ", Object.keys(objContent));
+      template = {
+        basePdf: BLANK_PDF,
+        schemas: [
+          {
+            "title": {
+                type: 'text',
+                position: { x: 0, y: 10 },
+                width: 210,
+                height: 24,
+                fontSize: 24,
+                content: objContent["Title"]
+            },
+            "introduction": {
+                type: 'text',
+                position: { x: 0, y: 30 },
+                width: 210,
+                height: 12,
+                fontSize: 12,
+                content: objContent["Introduction"]
+            },
+            "sectionTitle1": {
+                type: 'text',
+                position: { x: 0, y: 50 },
+                width: 210,
+                height: 18,
+                fontSize: 18,
+                content: objContent["SectionTitle1"]
+            },
+            "sectionContent1": {
+                type: 'text',
+                position: { x: 0, y: 60 },
+                width: 210,
+                height: 12,
+                fontSize: 12,
+                content: objContent["SectionContent1"]
+            },
+            "sectionTitle2": {
+                type: 'text',
+                position: { x: 0, y: 90 },
+                width: 210,
+                height: 18,
+                fontSize: 18,
+                content: objContent["SectionTitle2"]
+            },
+            "sectionContent2": {
+                type: 'text',
+                position: { x: 0, y: 100 },
+                width: 210,
+                height: 12,
+                fontSize: 12,
+                content: objContent["SectionContent2"]
+            },
+            "conclusion": {
+                type: 'text',
+                position: { x: 0, y: 240 },
+                width: 210,
+                height: 12,
+                fontSize: 12,
+                content: objContent["Conclusion"]
+            },
+            "footer": {
+                type: 'text',
+                position: { x: 0, y: 270 },
+                width: 210,
+                height: 20,
+                fontSize: 10,
+                content: 'Made with love by the HACX group.'
+            }
           }
-        }
-      ]
-    };
+        ]
+      };
+    } catch {
+      template = {
+        basePdf: BLANK_PDF,
+        schemas: [
+          {
+          }
+        ]
+      };
+    }
     if (pdfRef.current) {
       const domContainer  = pdfRef.current as HTMLElement;
       console.log("Instantiate designer again");
