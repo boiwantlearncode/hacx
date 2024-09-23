@@ -43,9 +43,9 @@ export const generator = async (prompt: string, n: number = 1, size: string = "1
             }
         });
 
-        const generatedImages = results.data.map((image: any) => image.data);
+        const generatedImages = results.data.map((image: any) => image.url);
         
-        console.log(`Generated Image URLs: ${JSON.stringify(results)}`);
+        console.log(`Generated Image URLs: ${generatedImages}`);
         return generatedImages;
     } catch (error: any) {
         console.error(`Error generating images: ${error.message}`);

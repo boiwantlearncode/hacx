@@ -250,7 +250,7 @@ export default function AIGeneratorForm() {
           setCompleted(false);
           setLoading(true);
           setGeneratedFormat(radioFormat)
-          const generatedText = await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>, selectedFiles);
+          const generatedText = await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>, selectedFiles) as string;
           setText(generatedText);
           setLoading(false);
           setCompleted(true);
@@ -346,11 +346,8 @@ async function GenerateImage(input: string) {
       throw new Error('Empty response from server');
     }
 
-    // Parse the response as JSON
-    console.log("Before parsing");
-    const data = JSON.parse(responseText);
-    console.log("Inside AIGeneratorForm.tsx");
-    console.log(data.response);
+    const data = JSON.parse(responseText).message;
+    return data;
   } catch (error) {
     console.error('Error parsing JSON or fetching data:', error);
   }
@@ -371,13 +368,25 @@ async function BundleInputs(format: string, audience: string, customAudience: st
     .join('\n')
     .trim();
 
+  const imagePrompt: string = `
+    When you generate images, you tend to generate inappropriate text. So, generating an image without text is always preferred. Generate an image that is appropriate to ${audience === "Custom (Specify)" ? customAudience : audience}. Also, the image must be releated to the reasons the target audience use drugs which is described as follows: ${selectedReason.values().next().value}. Additional reason (if any): ${reason || "NIL"}.
+  `
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+    .trim();
+
   switch (format) {
     case "Poster":
       console.log("In construction");
       break;
     case "Info Package": // Only one we have implemented
       console.log(prompt);
-      return await ChatBotResponse(prompt, audience, attachments);
+      const imagesString = (await GenerateImage(imagePrompt))
+                            .map((url: string) => `<img src="${url}" alt="Generated Image" height="240" />`).join('<br />');
+      const generatedText = (await ChatBotResponse(prompt, audience, attachments)).replaceAll('\n', '<br />');
+      console.log("Generated text: ", generatedText);
+      return `${imagesString}<br /><br />${generatedText}`;
     case "Resource Toolkit":
       console.log("In construction");
       break;

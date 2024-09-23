@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
+import type { ReadStream } from 'fs';
 
 // Get environment variables
 const azureOpenAIKey = process.env.AZURE_OPENAI_API_KEY;
@@ -30,7 +31,8 @@ const vectorStoreID = "vs_ifXoUL5ceuFJLkLKtdHjUAVD";
 const options = {
     model: "GenAI", // replace with model deployment name
     name: "Preventive Drug Education",
-    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. I want the output to be a JSON object which I can directly reference and perform JSON.parse(output) to get an object. It must have the following keys: Title, Introduction, SectionTitle1, SectionContent1, Conclusion. Select a random number, x, from 5 to 8, and generate x number of sections -- number them accordingly. Do not insert source or references. You can take inspiration from the file search tool by looking at relevant resources that have their filenames based on the resource type (such as infographic, poster etc), target audience (in brackets at the beginning of the filename), subtopic and more.",
+    // instructions: "Help generate promotional preventive drug education materials based on the target audience specified. I want the output to be a JSON object which I can directly reference and perform JSON.parse(output) to get an object. It must have the following keys: Title, Introduction, SectionTitle1, SectionContent1, Conclusion. Select a random number, x, from 5 to 8, and generate x number of sections -- number them accordingly. Do not insert source or references. You can take inspiration from the file search tool by looking at relevant resources that have their filenames based on the resource type (such as infographic, poster etc), target audience (in brackets at the beginning of the filename), subtopic and more.",
+    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. I want the output to be neatly organized in paragraphs, and written like an article. It must have the following sections: Title, Introduction, SectionTitle1, SectionContent1, Conclusion. Select a random number, x, from 5 to 8, and generate x number of sections. Leave the sources at the end of the entire text only. Ensure that the output format is directly suitable as plaintext. You can take inspiration from the file search tool by looking at relevant resources that have their filenames based on the resource type (such as infographic, poster etc), target audience (in brackets at the beginning of the filename), subtopic and more.",
     tools: [{"type":"file_search"}],
     
     tool_resources: {"file_search":{"vector_store_ids":[vectorStoreID]}},
@@ -38,7 +40,7 @@ const options = {
     top_p: 1
 };
 
-var assistantResponse;
+let assistantResponse: any;
 
 const setupAssistant = async () => {
     try {
@@ -52,7 +54,8 @@ const setupAssistant = async () => {
 setupAssistant();
 
 
-var fileStreams, fileIds;
+let fileStreams: ReadStream[];
+let fileIds: string[];
 
 export async function uploadFiles(files: File[], audience: string) {
     // Create a unique temporary directory
@@ -97,7 +100,7 @@ export async function uploadFiles(files: File[], audience: string) {
 
         // Clean up the temporary directory
         await fs.promises.rm(tempDirectoryPath, { recursive: true, force: true });
-    } catch (error) {
+    } catch (error: any) {
         console.error(`Error processing files: ${error.message}`);
     }
 

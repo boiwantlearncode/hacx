@@ -20,6 +20,7 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
             try {
                 const data = await req.json();
                 const imageGenerated = await generator(data.message);
+                console.log("Image Generated: ", imageGenerated);
                 
                 return NextResponse.json(
                     { message: imageGenerated },
