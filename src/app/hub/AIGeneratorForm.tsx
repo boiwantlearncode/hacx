@@ -30,7 +30,6 @@ type radioType = {
   label: string
 }
 
-
 const images = [
   { src: "/first.jpg", aspect_ratio: 16 / 9 },
   { src: "/second.png", aspect_ratio: 16 / 9 },
@@ -82,6 +81,10 @@ const formats: radioType[] = [
 ]
 
 const audiences: radioType[] = [
+  {
+    id: "Everyone",
+    label: "General (Everyone)",
+  },
   {
     id: "All Students",
     label: "Students (General)",
@@ -151,7 +154,7 @@ export default function AIGeneratorForm() {
       <section className="w-4/5 py-8 px-10 space-y-8 bg-background rounded-lg">
         <h1 className="text-xl text-foreground">Generate your PDE Materials</h1>
         <RadioGroup
-          label="Select your favorite city"
+          label="Select resource type"
           value={radioFormat}
           onValueChange={setRadioFormat}
         >
@@ -222,6 +225,18 @@ export default function AIGeneratorForm() {
           />
         </OverlayProvider>
 
+        <Spacer y={24}/>
+     
+        <span>Upload a file</span>
+        
+        <Input
+          key="attachments"
+          type="file"
+          label="Upload a file to be used as reference material (.pdf, .png, .jpg etc). Ensure the filename is relevant to the file content."
+          labelPlacement="outside"
+        />
+      
+     
       </section>
 
 
@@ -247,7 +262,7 @@ export default function AIGeneratorForm() {
   )
 }
 
-async function ChatBotResponse(input: string) {
+async function ChatBotResponse(input: string, target: string) {
   console.log("ChatBotResponse called!")
   // console.log(input);
   try {
@@ -256,7 +271,7 @@ async function ChatBotResponse(input: string) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message: input }),
+      body: JSON.stringify({ message: input, audience: target }),
     });
 
     if (!response.ok) {
@@ -331,7 +346,7 @@ async function BundleInputs(format: string, audience: string, customAudience: st
       break;
     case "Info Package": // Only one we have implemented
       console.log(prompt);
-      return await ChatBotResponse(prompt);
+      return await ChatBotResponse(prompt, audience);
     case "Resource Toolkit":
       console.log("In construction");
       break;

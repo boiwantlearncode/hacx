@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
         } else {
             try {
                 const data = await req.json();
-                const assistantResponse = await runAssistant(data.message);
+                const assistantResponse = await runAssistant(data.message, data.audience);
                 
                 return NextResponse.json(
                     { message: assistantResponse },
