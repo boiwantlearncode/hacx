@@ -30,7 +30,7 @@ const vectorStoreID = "vs_ifXoUL5ceuFJLkLKtdHjUAVD";
 const options = {
     model: "GenAI", // replace with model deployment name
     name: "Preventive Drug Education",
-    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. I want the output to be a JSON object which I can directly reference and perform JSON.parse(output) to get an object. It must have the following keys: Title, Introduction, SectionTitle1, SectionContent1, Conclusion. Select a random number, x, from 5 to 8, and generate x number of sections -- number them accordingly. You can take inspiration from the file search tool by looking at relevant resources that have their filenames based on the resource type (such as infographic, poster etc), target audience (in brackets at the beginning of the filename), subtopic and more. DO NOT insert source or references.",
+    instructions: "Help generate promotional preventive drug education materials based on the target audience specified. I want the output to be a JSON object which I can directly reference and perform JSON.parse(output) to get an object. It must have the following keys: Title, Introduction, SectionTitle1, SectionContent1, Conclusion. Select a random number, x, from 5 to 8, and generate x number of sections -- number them accordingly. Do not insert source or references. You can take inspiration from the file search tool by looking at relevant resources that have their filenames based on the resource type (such as infographic, poster etc), target audience (in brackets at the beginning of the filename), subtopic and more.",
     tools: [{"type":"file_search"}],
     
     tool_resources: {"file_search":{"vector_store_ids":[vectorStoreID]}},
