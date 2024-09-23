@@ -1,4 +1,3 @@
-// import { NextRequest, NextResponse } from 'next';
 import { runAssistant } from '../../../actions/chatbot'; // Server-side code with Azure OpenAI logic
 import { NextRequest, NextResponse } from 'next/server';
 

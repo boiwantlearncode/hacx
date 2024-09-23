@@ -1,6 +1,8 @@
 const { AzureOpenAI } = require('openai');
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
+import { v4 as uuidv4 } from 'uuid';
 
 // Get environment variables
 const azureOpenAIKey = process.env.AZURE_OPENAI_API_KEY;
@@ -10,28 +12,6 @@ const azureOpenAIVersion = "2024-05-01-preview";
 // Check env variables
 if (!azureOpenAIKey || !azureOpenAIEndpoint) {
     throw new Error("Please set AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT in your environment variables.");
-}
-
-var fileStreams, fileIds;
-
-async function uploadFile(file: File, audience: string) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
-  
-    await fs.writeFile(`@/actions/files/(${audience})${file.name}`, buffer, (err) => {
-        if (err)
-          console.log(err);
-        else {
-          console.log("File written successfully\n");
-    }});
-
-    const directoryPath = "./src/actions/files"
-    fileStreams = fs.readdirSync(directoryPath).map((file) => {
-        return fs.createReadStream(path.join(directoryPath, file));
-    });
-    fileIds = fs.readdirSync(directoryPath).map((file) => path.parse(file).name);
-  
-    return {fileStreams, fileIds};
 }
 
 // Get Azure SDK client
@@ -45,18 +25,20 @@ const getClient = () => {
 };
 
 const assistantsClient = getClient();
-var assistantResponse = null;
 
+const vectorStoreID = "vs_ifXoUL5ceuFJLkLKtdHjUAVD";
 const options = {
     model: "GenAI", // replace with model deployment name
     name: "Preventive Drug Education",
     instructions: "Help generate promotional preventive drug education materials based on the target audience specified. I want the output to be a JSON object which I can directly reference and perform JSON.parse(output) to get an object. It must have the following keys: Title, Introduction, SectionTitle1, SectionContent1, Conclusion. Select a random number, x, from 5 to 8, and generate x number of sections -- number them accordingly. You can take inspiration from the file search tool by looking at relevant resources that have their filenames based on the resource type (such as infographic, poster etc), target audience (in brackets at the beginning of the filename), subtopic and more. DO NOT insert source or references.",
     tools: [{"type":"file_search"}],
     
-    tool_resources: {"file_search":{"vector_store_ids":["vs_M7fX0yEGJVjyReics1cbSXEB"]}},
+    tool_resources: {"file_search":{"vector_store_ids":[vectorStoreID]}},
     temperature: 0.5,
     top_p: 1
 };
+
+var assistantResponse;
 
 const setupAssistant = async () => {
     try {
@@ -70,14 +52,62 @@ const setupAssistant = async () => {
 setupAssistant();
 
 
+var fileStreams, fileIds;
+
+export async function uploadFiles(files: File[], audience: string) {
+    // Create a unique temporary directory
+    const tempDirectoryPath = path.join(os.tmpdir(), `uploaded_files_${uuidv4()}`);
+    
+    // Ensure the temporary directory exists
+    if (!fs.existsSync(tempDirectoryPath)) {
+        fs.mkdirSync(tempDirectoryPath, { recursive: true });
+    }
+
+    try {
+        // Write files asynchronously to the temporary directory
+        await Promise.all(Array.from(files).map(async (file) => {
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = new Uint8Array(arrayBuffer);
+            const filePath = path.join(tempDirectoryPath, `(${audience}) ${file.name}`);
+            await fs.promises.writeFile(filePath, buffer);
+            console.log(`File written successfully: ${filePath}`);
+        }));
+
+        // Read file streams and IDs from the temporary directory
+        fileStreams = fs.readdirSync(tempDirectoryPath).map((file) => {
+            return fs.createReadStream(path.join(tempDirectoryPath, file));
+        });
+        fileIds = fs.readdirSync(tempDirectoryPath).map((file) => path.parse(file).name);
+
+        if (!(fileStreams === undefined || fileIds === undefined)) {
+            const fileBatch = await assistantsClient.beta.vectorStores.fileBatches.uploadAndPoll(
+            vectorStoreID,
+            {files:fileStreams,file_ids:fileIds}, // Use the streams
+            );
+            console.log(`File batch uploaded: ${JSON.stringify(fileBatch)}`);
+        }
+
+        // Delete files asynchronously from the temporary directory
+        const filesToDelete = await fs.promises.readdir(tempDirectoryPath);
+        await Promise.all(filesToDelete.map(async (file) => {
+            const filePath = path.join(tempDirectoryPath, file);
+            await fs.promises.unlink(filePath);
+            console.log(`Deleted file: ${filePath}`);
+        }));
+
+        // Clean up the temporary directory
+        await fs.promises.rm(tempDirectoryPath, { recursive: true, force: true });
+    } catch (error) {
+        console.error(`Error processing files: ${error.message}`);
+    }
+
+    return { fileStreams, fileIds };
+}
+
 const role = "user";
 
 export const runAssistant = async (message: string, audience: string) => {
-    try {  
-    const fileBatch = await assistantsClient.beta.vectorStores.fileBatches.uploadAndPoll(
-      "vs_M7fX0yEGJVjyReics1cbSXEB",
-      {files:fileStreams,file_ids:fileIds}, // Use the streams
-    );
+    try {         
         // Create a thread
         const assistantThread = await assistantsClient.beta.threads.create({});
         console.log(`Thread created: ${JSON.stringify(assistantThread)}`);

@@ -140,6 +140,7 @@ export default function AIGeneratorForm() {
   const [textCustom, setTextCustom] = useState<string>('');
   const [textReasons, setTextReasons] = useState<string>('');
   const [dropdownSelectedReason, setDropdownSelectedReason] = useState<Selection>(new Set([reasonPrompts[0].prompt]));
+  const [selectedFiles, setSelectedFiles] = useState<File[] | null>(null);
   const [generatedFormat, setGeneratedFormat] = useState<string>('Info Package');
 
   const { text, setText, loading, setLoading, completed, setCompleted } = usePDFStore(
@@ -216,26 +217,26 @@ export default function AIGeneratorForm() {
             ))}
           </DropdownMenu>
         </Dropdown>
-        <h2 className="font-medium">Select reference materials:</h2>
+
+        {/*<h2 className="font-medium">Select reference materials:</h2>
         <OverlayProvider>
           <Gallery
             {...{ images, widths, ratios }}
             lastRowBehavior="match-previous"
             overlay={(i) => <SelectedOverlay index={i} />}
           />
-        </OverlayProvider>
+        </OverlayProvider>*/}
 
-        <Spacer y={24}/>
-     
-        <span>Upload a file</span>
+        <Spacer y={36}/>
         
         <Input
           key="attachments"
           type="file"
-          label="Upload a file to be used as reference material (.pdf, .png, .jpg etc). Ensure the filename is relevant to the file content."
+          label="Upload multiple files at once to be used as reference material (.pdf, .png, .jpg etc). Ensure the filename is relevant to the file content."
           labelPlacement="outside"
+          multiple={true}
+          onChange={(e) => setSelectedFiles(e.target.files ? Array.from(e.target.files) : null)}
         />
-      
      
       </section>
 
@@ -249,7 +250,7 @@ export default function AIGeneratorForm() {
           setCompleted(false);
           setLoading(true);
           setGeneratedFormat(radioFormat)
-          const generatedText = await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>);
+          const generatedText = await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>, selectedFiles);
           setText(generatedText);
           setLoading(false);
           setCompleted(true);
@@ -262,9 +263,39 @@ export default function AIGeneratorForm() {
   )
 }
 
-async function ChatBotResponse(input: string, target: string) {
+async function ChatBotResponse(input: string, target: string, attachments: File[] | null) {
   console.log("ChatBotResponse called!")
-  // console.log(input);
+  if (attachments && attachments.length > 0) {
+    try {
+      const formData = new FormData();
+      formData.append('audience', target);
+
+      // Loop through each file and append to formData
+      for (let i = 0; i < attachments.length; i++) {
+        formData.append('files', attachments[i], attachments[i].name);
+      }
+
+      const uploadResponse = await fetch('../api/uploader', { // Ensure the correct API route
+        method: 'POST',
+        body: formData, // Use FormData for file uploads
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`HTTP error! status: ${uploadResponse.status}`);
+      }
+
+      // Check if the response has content before trying to parse it
+      const uploadResponseText = await uploadResponse.text();
+      if (!uploadResponseText) {
+        throw new Error('Empty response from server');
+      }
+      console.log('Files uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      return; // Early exit if file upload fails
+    }
+  }
+
   try {
     const response = await fetch('../api/chatbot', { // Ensure the correct API route
       method: 'POST',
@@ -325,7 +356,7 @@ async function GenerateImage(input: string) {
   }
 }
 
-async function BundleInputs(format: string, audience: string, customAudience: string, reason: string, selectedReason: Set<string>) {
+async function BundleInputs(format: string, audience: string, customAudience: string, reason: string, selectedReason: Set<string>, attachments: File[] | null) {
 
   // console.log over here look at browser!!!
   const prompt: string = `
@@ -346,7 +377,7 @@ async function BundleInputs(format: string, audience: string, customAudience: st
       break;
     case "Info Package": // Only one we have implemented
       console.log(prompt);
-      return await ChatBotResponse(prompt, audience);
+      return await ChatBotResponse(prompt, audience, attachments);
     case "Resource Toolkit":
       console.log("In construction");
       break;
