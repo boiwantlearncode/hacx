@@ -90,10 +90,11 @@ async function GenerateImage(input: string) {
 async function BundleInputs(format: string, audience: string, customAudience: string, reason: string, attachments: File[] | null, setImagePrompt: (imagePrompt: string) => void) {
 
   // console.log over here look at browser!!!
+  const audienceString = audience === "Custom (Specify)" ? customAudience : audience;
   const prompt: string = `
     Consider the following information and generate the necessary materials that is appropriate for all the target audience listed.
     You should consider the background of the target audience and the potential ways they might get involved in drug usage, and address these issues in your response.
-    Target audience: ${audience === "Custom (Specify)" ? customAudience : audience}
+    Target audience: ${audienceString}
     Reasons the target audience use drugs: ${reason || "NIL"}
   `
     .split('\n')
@@ -116,7 +117,7 @@ async function BundleInputs(format: string, audience: string, customAudience: st
       console.log(prompt);
       const imagesString = (await GenerateImage(_imagePrompt))
                             .map((url: string) => `<img src="${url}" alt="Generated Image" height="240">`).join('<br>');
-      const generatedText = (await ChatBotResponse(prompt, audience, attachments)).replaceAll('\n', '<br>');
+      const generatedText = (await ChatBotResponse(prompt, audienceString, attachments)).replaceAll('\n', '<br>');
       console.log("Generated text: ", generatedText);
       return `${imagesString}<br /><br />${generatedText}`;
     case "Poster":
