@@ -40,9 +40,10 @@ export default function EditForm() {
           >
           Back
           </button>
+          <TinyEditor />
         </>
       )}
-      <TinyEditor />
+      
     </main>
   )
 }
