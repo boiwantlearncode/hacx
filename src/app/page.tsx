@@ -2,16 +2,23 @@
 
 import React, { useState } from "react";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useUser } from '../context/userContext';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { setUsername, setPassword } = useUser();
+  const [localEmail, setLocalEmail] = useState('');
+  const [localPassword, setLocalPassword] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Authentication logic
-    console.log('Email:', email);
-    console.log('Password:', password);
+    // Update the global context with the user details
+    setUsername(localEmail);
+    setPassword(localPassword);
+    setIsLoggedIn(true);
+    router.push('/hub');
   };
 
   return (
@@ -26,8 +33,8 @@ export default function Login() {
               id="email"
               className="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={localEmail}
+              onChange={(e) => setLocalEmail(e.target.value)}
               required
             />
           </div>
@@ -38,20 +45,23 @@ export default function Login() {
               id="password"
               className="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
               placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={localPassword}
+              onChange={(e) => setLocalPassword(e.target.value)}
               required
             />
           </div>
-          <Link href="/hub">
             <button
               type="submit"
               className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition duration-300"
             >
               Login
             </button>
-          </Link>
         </form>
+        {isLoggedIn && (
+          <p className="text-center text-sm text-green-600 font-bold mt-4">
+            User logged in successfully!
+          </p>
+        )}
         <p className="text-center text-sm text-gray-600 mt-4">
           Don't have an account? <Link href="/register" className="text-indigo-500 hover:underline">Register</Link>
         </p>
