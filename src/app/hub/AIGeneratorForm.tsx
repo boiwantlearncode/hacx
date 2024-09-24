@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { 
   RadioGroup, Radio,
@@ -38,17 +38,18 @@ const images = [
 ]
 
 const reasonPrompts = [
+  { prompt: "View previously used prompts" },
   { prompt: "Too high" },
   { prompt: "Peer pressure" },
 ];
 
-// const customPrompts = [
-//   { prompt: "View previously used prompts" },
-//   { prompt: "Blue Lock styled" },
-//   { prompt: "Lookism styled" },
-//   { prompt: "Has guy smoking weed" },
-//   { prompt: "People playing sports" },
-// ];
+const customPrompts = [
+  { prompt: "View previously used prompts" },
+  { prompt: "Blue Lock styled" },
+  { prompt: "Lookism styled" },
+  { prompt: "Has guy smoking weed" },
+  { prompt: "People playing sports" },
+];
 
 const widths = [500, 1000, 1600]
 const ratios = [2.2, 4, 6, 8]
@@ -139,9 +140,26 @@ export default function AIGeneratorForm() {
   const [radioAudience, setRadioAudience] = useState<string>('All Students');
   const [textCustom, setTextCustom] = useState<string>('');
   const [textReasons, setTextReasons] = useState<string>('');
+  const [dropdownSelectedReason1, setDropdownSelectedReason1] = useState(() => {
+    const saved = localStorage.getItem('dropdownSelectedReason1');
+    return saved ? JSON.parse(saved) : reasonPrompts;
+  });
+  const [customSelectedReason1, setCustomSelectedReason1] = useState(() => {
+    const saved = localStorage.getItem('customSelectedReason1');
+    return saved ? JSON.parse(saved) : customPrompts;
+  });
+  const [customSelectedReason, setCustomSelectedReason] = useState<Selection>(new Set([customPrompts[0].prompt]));
   const [dropdownSelectedReason, setDropdownSelectedReason] = useState<Selection>(new Set([reasonPrompts[0].prompt]));
   const [selectedFiles, setSelectedFiles] = useState<File[] | null>(null);
   const [generatedFormat, setGeneratedFormat] = useState<string>('Info Package');
+
+  useEffect(() => {
+    localStorage.setItem('dropdownSelectedReason1', JSON.stringify(dropdownSelectedReason1));
+  }, [dropdownSelectedReason1]);
+
+  useEffect(() => {
+    localStorage.setItem('customSelectedReason1', JSON.stringify(customSelectedReason1));
+  }, [customSelectedReason1]);
 
   const { text, setText, loading, setLoading, completed, setCompleted } = usePDFStore(
     (state) => state,
@@ -149,6 +167,13 @@ export default function AIGeneratorForm() {
 
   React.useEffect(() => {
   }, [loading, completed]);
+
+  const handleCreatePdf = () => {
+    if (textReasons) {
+      setCustomSelectedReason1([...customSelectedReason1, { prompt: textCustom }]);
+      setDropdownSelectedReason1([...dropdownSelectedReason1, { prompt: textReasons }]);
+    }
+  };
 
   return (
     <main className="flex flex-col w-full items-center">
@@ -178,15 +203,31 @@ export default function AIGeneratorForm() {
         </RadioGroup>
         <Spacer y={6}/>
         {radioAudience == "Custom (Specify)" ? 
-          <Input
+          <><Input
             key="textCustom"
             type="text"
             label="Insert custom target audience"
             labelPlacement="outside"
             placeholder="Enter any target audience that is not listed above"
             value={textCustom}
-            onValueChange={setTextCustom}
-          /> : null
+            onValueChange={setTextCustom} /><h3>or use previously used prompts</h3><Dropdown>
+              <DropdownTrigger>
+                <Button variant="faded">{customSelectedReason}</Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                selectionMode="single"
+                selectedKeys={customSelectedReason}
+                onSelectionChange={setCustomSelectedReason}
+                variant="faded"
+              >
+                {customSelectedReason1.map((item: { prompt: string }) => (
+                  <DropdownItem key={item.prompt}>
+                    {item.prompt}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown></>: null
         }
         <Spacer y={24}/>
         <Input
@@ -210,7 +251,7 @@ export default function AIGeneratorForm() {
             onSelectionChange={setDropdownSelectedReason}
             variant="faded"
           >
-            {reasonPrompts.map((item) => (
+            {dropdownSelectedReason1.map((item: { prompt: string }) => (
               <DropdownItem key={item.prompt}>
                 {item.prompt}
               </DropdownItem>
@@ -247,6 +288,7 @@ export default function AIGeneratorForm() {
       {completed && <h2 className="text-green-700 font-semibold mt-4">{generatedFormat} has been generated! View the result in the "Edit" tab.</h2>}
       <Button isDisabled={loading} className="pr-4 my-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={async () => 
         {
+          handleCreatePdf();
           setCompleted(false);
           setLoading(true);
           setGeneratedFormat(radioFormat)
