@@ -13,6 +13,15 @@ interface CanvaHomepageProps {
 }
 
 const CanvaHomepage: React.FC<CanvaHomepageProps> = ({ userPdfs, sharedPdfs, onPdfClick }) => {
+    const noPdfs = userPdfs.length === 0 && sharedPdfs.length === 0;
+    if (noPdfs) {
+      return (
+        <div className="canva-homepage p-6 max-w-4xl mx-auto font-sans">
+          <p className="text-2xl font-bold mb-4 text-gray-800">You have no PDFs yet.</p>
+        </div>
+      );
+    }
+
   return (
     <div className="canva-homepage p-6 max-w-4xl mx-auto font-sans">
       <h1 className="text-2xl font-bold mb-4 text-gray-800">Your PDFs</h1>
