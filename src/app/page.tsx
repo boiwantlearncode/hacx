@@ -24,6 +24,15 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <div className="mb-8">
+        <img 
+          src="/cnb-logo.png" 
+          alt="CNB Logo" 
+          width={200} 
+          height={200} 
+          className="object-contain"
+        />
+      </div>
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
