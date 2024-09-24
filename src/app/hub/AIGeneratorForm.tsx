@@ -13,17 +13,15 @@ import {
 
 import type { Selection } from "@react-types/shared";
 
-import { BsEmojiAstonishedFill, BsStars } from "react-icons/bs";
+import { BsStars } from "react-icons/bs";
 
 import { Gallery } from "next-gallery"
 import { SelectedOverlay, OverlayProvider } from './components/SelectedOverlay'
 import Spacer from "./components/Spacer";
 // import FileUpload from "./components/FileUpload"
 
-// import { usePDFStore } from '@/lib/store';
-// import type { PDFState } from '@/lib/store';
-// import { shallow } from 'zustand/shallow';
 import { usePDFStore } from '@/providers/pdf-store-provider';
+import { BundleInputs } from "../utils/helpers";
 
 type radioType = {
   id: string,
@@ -56,12 +54,12 @@ const ratios = [2.2, 4, 6, 8]
 
 const formats: radioType[] = [
   {
-    id: "Poster",
-    label: "Poster",
-  },
-  {
     id: "Info Package",
     label: "Info Package",
+  },
+  {
+    id: "Poster",
+    label: "Poster",
   },
   {
     id: "Resource Toolkit",
@@ -161,7 +159,7 @@ export default function AIGeneratorForm() {
     localStorage.setItem('customSelectedReason1', JSON.stringify(customSelectedReason1));
   }, [customSelectedReason1]);
 
-  const { text, setText, loading, setLoading, completed, setCompleted } = usePDFStore(
+  const { text, setText, loading, setLoading, completed, setCompleted, imageLoading, setImageLoading, imagePrompt, setImagePrompt } = usePDFStore(
     (state) => state,
   )
 
@@ -186,7 +184,11 @@ export default function AIGeneratorForm() {
         >
           {
             formats.map((format) => (
-              <Radio key={format.id} value={format.id}>{format.label}</Radio>
+              (format.id === "Info Package") ? (
+                <Radio key={format.id} value={format.id}>{format.label}</Radio>
+              ) : (
+                <Radio isDisabled key={format.id} value={format.id}>{format.label}</Radio>
+              )
             ))
           }
         </RadioGroup>
@@ -286,13 +288,20 @@ export default function AIGeneratorForm() {
       {/* <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" /> */}
 
       {completed && <h2 className="text-green-700 font-semibold mt-4">{generatedFormat} has been generated! View the result in the "Edit" tab.</h2>}
-      <Button isDisabled={loading} className="pr-4 my-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={async () => 
+      <Button isDisabled={loading || imageLoading} className="pr-4 my-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={async () => 
         {
           handleCreatePdf();
           setCompleted(false);
           setLoading(true);
           setGeneratedFormat(radioFormat)
-          const generatedText = await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>, selectedFiles) as string;
+          const generatedText = await BundleInputs(
+            radioFormat, 
+            radioAudience, 
+            textCustom, 
+            textReasons, 
+            dropdownSelectedReason as Set<string>, selectedFiles,
+            setImagePrompt
+          ) as string;
           setText(generatedText);
           setLoading(false);
           setCompleted(true);
@@ -303,143 +312,4 @@ export default function AIGeneratorForm() {
       </Button>
     </main>
   )
-}
-
-async function ChatBotResponse(input: string, target: string, attachments: File[] | null) {
-  console.log("ChatBotResponse called!")
-  if (attachments && attachments.length > 0) {
-    try {
-      const formData = new FormData();
-      formData.append('audience', target);
-
-      // Loop through each file and append to formData
-      for (let i = 0; i < attachments.length; i++) {
-        formData.append('files', attachments[i], attachments[i].name);
-      }
-
-      const uploadResponse = await fetch('../api/uploader', { // Ensure the correct API route
-        method: 'POST',
-        body: formData, // Use FormData for file uploads
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`HTTP error! status: ${uploadResponse.status}`);
-      }
-
-      // Check if the response has content before trying to parse it
-      const uploadResponseText = await uploadResponse.text();
-      if (!uploadResponseText) {
-        throw new Error('Empty response from server');
-      }
-      console.log('Files uploaded successfully!');
-    } catch (error) {
-      console.error('Error uploading files:', error);
-      return; // Early exit if file upload fails
-    }
-  }
-
-  try {
-    const response = await fetch('../api/chatbot', { // Ensure the correct API route
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message: input, audience: target }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // Check if the response has content before trying to parse it
-    const responseText = await response.text();
-
-    if (!responseText) {
-      throw new Error('Empty response from server');
-    }
-
-    // Parse the response as JSON
-    const data = JSON.parse(responseText).message;
-    // console.log(data);
-    return data;
-  } catch (error) {
-    console.error('Error parsing JSON or fetching data:', error);
-  }
-}
-
-async function GenerateImage(input: string) {
-  console.log(input)
-  try {
-    const response = await fetch('../api/imager', { // Ensure the correct API route
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message: input }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // Check if the response has content before trying to parse it
-    const responseText = await response.text();
-    if (!responseText) {
-      throw new Error('Empty response from server');
-    }
-
-    const data = JSON.parse(responseText).message;
-    return data;
-  } catch (error) {
-    console.error('Error parsing JSON or fetching data:', error);
-  }
-}
-
-async function BundleInputs(format: string, audience: string, customAudience: string, reason: string, selectedReason: Set<string>, attachments: File[] | null) {
-
-  // console.log over here look at browser!!!
-  const prompt: string = `
-    Consider the following information and generate the necessary materials that is appropriate for all the target audience listed.
-    You should consider the background of the target audience and the potential ways they might get involved in drug usage, and address these issues in your response.
-    Target audience: ${audience === "Custom (Specify)" ? customAudience : audience}
-    Reasons the target audience use drugs: ${reason || "NIL"}
-    Additional reasons the target audience use drugs: ${selectedReason.values().next().value || "NIL"}
-  `
-    .split('\n')
-    .map(line => line.trim())
-    .join('\n')
-    .trim();
-
-  const imagePrompt: string = `
-    When you generate images, you tend to generate inappropriate text. So, generating an image without text is always preferred. Generate an image that is appropriate to ${audience === "Custom (Specify)" ? customAudience : audience}. Also, the image must be releated to the reasons the target audience use drugs which is described as follows: ${selectedReason.values().next().value}. Additional reason (if any): ${reason || "NIL"}.
-  `
-    .split('\n')
-    .map(line => line.trim())
-    .join('\n')
-    .trim();
-
-  switch (format) {
-    case "Poster":
-      console.log("In construction");
-      break;
-    case "Info Package": // Only one we have implemented
-      console.log(prompt);
-      const imagesString = (await GenerateImage(imagePrompt))
-                            .map((url: string) => `<img src="${url}" alt="Generated Image" height="240" />`).join('<br />');
-      const generatedText = (await ChatBotResponse(prompt, audience, attachments)).replaceAll('\n', '<br />');
-      console.log("Generated text: ", generatedText);
-      return `${imagesString}<br /><br />${generatedText}`;
-    case "Resource Toolkit":
-      console.log("In construction");
-      break;
-    case "Article":
-      console.log("In construction");
-      break;
-    case "Email":
-      console.log("In construction");
-      break;
-    case "Video":
-      console.log("In construction");
-      break;
-  }
 }
