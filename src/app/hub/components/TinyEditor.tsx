@@ -26,7 +26,7 @@ export default function TinyEditor() {
   }, []);
 
   return (
-    <main className="w-full bg-background rounded-lg">
+    <main className="w-full bg-background rounded-lg flex flex-col items-center justify-center">
       {loading && <h2 className='text-center font-semibold py-4'>Generating PDF, please wait...</h2>}
       {imageLoading && <h2 className='text-center font-semibold py-4'>Regenerating image, please wait...</h2>}
       {completed && <h2 className='text-green-700 font-semibold text-center py-4'>PDF Generated!</h2>}

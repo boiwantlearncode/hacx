@@ -294,14 +294,9 @@ export default function AIGeneratorForm() {
           setCompleted(false);
           setLoading(true);
           setGeneratedFormat(radioFormat)
-          const generatedText = await BundleInputs(
-            radioFormat, 
-            radioAudience, 
-            textCustom, 
-            textReasons, 
-            dropdownSelectedReason as Set<string>, selectedFiles,
-            setImagePrompt
-          ) as string;
+          const cr = Array.from(customSelectedReason).join('') === "View previously used prompts" ? textCustom : Array.from(customSelectedReason).join('');
+          const dr = Array.from(dropdownSelectedReason).join('') === "View previously used prompts" ? textReasons : Array.from(dropdownSelectedReason).join('');
+          const generatedText = await BundleInputs(radioFormat, radioAudience, cr, dr, selectedFiles, setImagePrompt) as string;
           setText(generatedText);
           setLoading(false);
           setCompleted(true);

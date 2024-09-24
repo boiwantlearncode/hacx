@@ -87,22 +87,14 @@ async function GenerateImage(input: string) {
   }
 }
 
-async function BundleInputs(
-  format: string, 
-  audience: string, 
-  customAudience: string, 
-  reason: string, 
-  selectedReason: Set<string>, 
-  attachments: File[] | null, 
-  setImagePrompt: (imagePrompt: string) => void
-) {
+async function BundleInputs(format: string, audience: string, customAudience: string, reason: string, attachments: File[] | null, setImagePrompt: (imagePrompt: string) => void) {
+
   // console.log over here look at browser!!!
   const prompt: string = `
     Consider the following information and generate the necessary materials that is appropriate for all the target audience listed.
     You should consider the background of the target audience and the potential ways they might get involved in drug usage, and address these issues in your response.
     Target audience: ${audience === "Custom (Specify)" ? customAudience : audience}
     Reasons the target audience use drugs: ${reason || "NIL"}
-    Additional reasons the target audience use drugs: ${selectedReason.values().next().value || "NIL"}
   `
     .split('\n')
     .map(line => line.trim())
@@ -110,7 +102,7 @@ async function BundleInputs(
     .trim();
 
   const _imagePrompt: string = `
-    When you generate images, you tend to generate inappropriate text. So, generating an image without text is always preferred. Generate an image that is appropriate to ${audience === "Custom (Specify)" ? customAudience : audience}. Also, the image must be releated to the reasons the target audience use drugs which is described as follows: ${selectedReason.values().next().value}. Additional reason (if any): ${reason || "NIL"}.
+    When you generate images, you tend to generate inappropriate text. So, generating an image without text is always preferred. Generate an image that is appropriate to the target audience: ${audience === "Custom (Specify)" ? customAudience : audience}. Also, the image must be releated to the reasons the target audience use drugs which is described as follows: ${reason || "NIL"}.
   `
     .split('\n')
     .map(line => line.trim())
