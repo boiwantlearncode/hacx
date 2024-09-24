@@ -39,10 +39,10 @@ export default function EditForm() {
           className="mb-8 mt-4 px-6 py-3 bg-blue-500 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
           >
           Back
-        </button>
-        <TinyEditor />
+          </button>
         </>
       )}
+      <TinyEditor />
     </main>
   )
 }
