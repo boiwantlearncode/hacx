@@ -3,42 +3,32 @@
 import * as React from "react"
 import { useState } from 'react';
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { 
+  RadioGroup, Radio,
+  Button,
+  Input,
+  Dropdown, DropdownMenu, DropdownItem, DropdownTrigger,
+  Spinner
+} from "@nextui-org/react";
 
-import { Button1 } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import type { Selection } from "@react-types/shared";
 
-import { Button } from "@nextui-org/button";
-
-import {
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
-  DropdownTrigger
-} from "@nextui-org/dropdown";
-
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-
-import { toast } from "@/components/ui/use-toast"
-
-import { BsStars } from "react-icons/bs";
+import { BsEmojiAstonishedFill, BsStars } from "react-icons/bs";
 
 import { Gallery } from "next-gallery"
 import { SelectedOverlay, OverlayProvider } from './components/SelectedOverlay'
-import FileUpload from "./components/FileUpload"
+import Spacer from "./components/Spacer";
+// import FileUpload from "./components/FileUpload"
+
+// import { usePDFStore } from '@/lib/store';
+// import type { PDFState } from '@/lib/store';
+// import { shallow } from 'zustand/shallow';
+import { usePDFStore } from '@/providers/pdf-store-provider';
+
+type radioType = {
+  id: string,
+  label: string
+}
 
 const images = [
   { src: "/first.jpg", aspect_ratio: 16 / 9 },
@@ -48,303 +38,366 @@ const images = [
 ]
 
 const reasonPrompts = [
-  { prompt: "Continue with custom input" },
   { prompt: "Too high" },
   { prompt: "Peer pressure" },
 ];
 
-const customPrompts = [
-  { prompt: "Continue with custom input" },
-  { prompt: "Blue Lock styled" },
-  { prompt: "Lookism styled" },
-  { prompt: "Has guy smoking weed" },
-];
+// const customPrompts = [
+//   { prompt: "View previously used prompts" },
+//   { prompt: "Blue Lock styled" },
+//   { prompt: "Lookism styled" },
+//   { prompt: "Has guy smoking weed" },
+//   { prompt: "People playing sports" },
+// ];
 
 const widths = [500, 1000, 1600]
 const ratios = [2.2, 4, 6, 8]
 
-const formats = [
+const formats: radioType[] = [
   {
-    id: "poster",
+    id: "Poster",
     label: "Poster",
   },
   {
-    id: "info-package",
+    id: "Info Package",
     label: "Info Package",
   },
   {
-    id: "resource-toolkit",
+    id: "Resource Toolkit",
     label: "Resource Toolkit",
   },
   {
-    id: "article",
+    id: "Article",
     label: "Article",
   },
   {
-    id: "email",
+    id: "Email",
     label: "Email",
   },
   {
-    id: "video",
+    id: "Video",
     label: "Video",
   },
 ]
 
-const audiences = [
+const audiences: radioType[] = [
   {
-    id: "primary",
-    label: "Primary",
+    id: "Everyone",
+    label: "General (Everyone)",
   },
   {
-    id: "secondary",
-    label: "Secondary",
+    id: "All Students",
+    label: "Students (General)",
   },
   {
-    id: "tertiary",
-    label: "Tertiary",
+    id: "Primary School Students",
+    label: "Primary School",
   },
   {
-    id: "university",
+    id: "Secondary School Students",
+    label: "Secondary School",
+  },
+  {
+    id: "Tertiary Level Students",
+    label: "Tertiary Level",
+  },
+  {
+    id: "University Students",
     label: "University",
   },
   {
-    id: "saf",
-    label: "SAF",
+    id: "Singapore Armed Forces",
+    label: "Singapore Armed Forces",
   },
   {
-    id: "spf",
-    label: "SPF",
+    id: "Singapore Police Force",
+    label: "Singapore Police Force",
   },
   {
-    id: "scdf",
-    label: "SCDF",
+    id: "Singapore Civil Defence Force",
+    label: "Singapore Civil Defence Force",
   },
   {
-    id: "parents",
+    id: "Parents",
     label: "Parents",
   },
   {
-    id: "athletes",
+    id: "Athletes",
     label: "Athletes",
+  },
+  {
+    id: "Custom (Specify)",
+    label: "Custom (Specify)",
   },
 ]
 
-const FormSchema = z.object({
-  formats: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one output format.",
-  }),
-  audiences: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one target audience.",
-  }),
-})
-
 export default function AIGeneratorForm() {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      formats: [],
-      audiences: []
-    },
-  })
 
   // Handling the state of the form inputs
-  const { watch } = form
-  const watchFormats = watch("formats");
-  const watchAudiences = watch("audiences");
 
-  const [reasonValue, setReasonValue] = useState('');
-  const [customValue, setCustomValue] = useState('');
-  const [reasonConfirmedValue, setReasonConfirmedValue] = useState('Continue with custom input');
-  const [customConfirmedValue, setCustomConfirmedValue] = useState('Continue with custom input');
+  const [radioFormat, setRadioFormat] = useState<string>('Info Package');
+  const [radioAudience, setRadioAudience] = useState<string>('All Students');
+  const [textCustom, setTextCustom] = useState<string>('');
+  const [textReasons, setTextReasons] = useState<string>('');
+  const [dropdownSelectedReason, setDropdownSelectedReason] = useState<Selection>(new Set([reasonPrompts[0].prompt]));
+  const [selectedFiles, setSelectedFiles] = useState<File[] | null>(null);
+  const [generatedFormat, setGeneratedFormat] = useState<string>('Info Package');
 
-  // Filter prompts based on input value
-  const filterPrompts = reasonPrompts.filter(item =>
-    item.prompt.toLowerCase().includes(reasonValue.toLowerCase())
-  );
+  const { text, setText, loading, setLoading, completed, setCompleted } = usePDFStore(
+    (state) => state,
+  )
 
-  const filteredPrompts = customPrompts.filter(item =>
-    item.prompt.toLowerCase().includes(customValue.toLowerCase())
-  );
-
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
-  }
+  React.useEffect(() => {
+  }, [loading, completed]);
 
   return (
     <main className="flex flex-col w-full items-center">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="w-4/5 py-8 px-10 space-y-8 bg-background rounded-lg">
-          <h1 className="text-xl text-foreground">Generate your PDE Materials</h1>
-          {/* Output Format Checkboxes */}
-          <FormField
-            control={form.control}
-            name="formats"
-            render={() => (
-              <FormItem>
-                <div className="mb-4">
-                  <FormLabel className="text-base">Select at least 1 output format(s): <span className="text-red-400">*</span></FormLabel>
-                </div>
-                {formats.map((format) => (
-                  <FormField
-                    key={format.id}
-                    control={form.control}
-                    name="formats"
-                    render={({ field }) => {
-                      return (
-                        <FormItem
-                          key={format.id}
-                          className="flex flex-row items-start space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(format.id)}
-                              onCheckedChange={(checked) => {
-                                return checked
-                                  ? field.onChange([...field.value, format.id])
-                                  : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== format.id
-                                    )
-                                  )
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {format.label}
-                          </FormLabel>
-                        </FormItem>
-                      )
-                    }}
-                  />
-                ))}
-                <FormMessage />
-              </FormItem>
-            )}
+      <section className="w-4/5 py-8 px-10 space-y-8 bg-background rounded-lg">
+        <h1 className="text-xl text-foreground">Generate your PDE Materials</h1>
+        <RadioGroup
+          label="Select resource type"
+          value={radioFormat}
+          onValueChange={setRadioFormat}
+        >
+          {
+            formats.map((format) => (
+              <Radio key={format.id} value={format.id}>{format.label}</Radio>
+            ))
+          }
+        </RadioGroup>
+        <RadioGroup
+          label="Select target audience: "
+          value={radioAudience}
+          onValueChange={setRadioAudience}
+        >
+          {
+            audiences.map((audience) => (
+              <Radio key={audience.id} value={audience.id}>{audience.label}</Radio>
+            ))
+          }
+        </RadioGroup>
+        <Spacer y={6}/>
+        {radioAudience == "Custom (Specify)" ? 
+          <Input
+            key="textCustom"
+            type="text"
+            label="Insert custom target audience"
+            labelPlacement="outside"
+            placeholder="Enter any target audience that is not listed above"
+            value={textCustom}
+            onValueChange={setTextCustom}
+          /> : null
+        }
+        <Spacer y={24}/>
+        <Input
+          key="textReasons"
+          type="text"
+          label="Reasons for drug usage"
+          labelPlacement="outside"
+          placeholder="Enter any reason(s) that the target audience engage in drug usage."
+          value={textReasons}
+          onValueChange={setTextReasons}
+        />
+        <h3>or use previously used prompts</h3>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button variant="faded">{dropdownSelectedReason}</Button>
+          </DropdownTrigger>
+          <DropdownMenu 
+            disallowEmptySelection
+            selectionMode="single" 
+            selectedKeys={dropdownSelectedReason}
+            onSelectionChange={setDropdownSelectedReason}
+            variant="faded"
+          >
+            {reasonPrompts.map((item) => (
+              <DropdownItem key={item.prompt}>
+                {item.prompt}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </Dropdown>
+
+        {/*<h2 className="font-medium">Select reference materials:</h2>
+        <OverlayProvider>
+          <Gallery
+            {...{ images, widths, ratios }}
+            lastRowBehavior="match-previous"
+            overlay={(i) => <SelectedOverlay index={i} />}
           />
-          {/* Target Audience Checkboxes */}
-          <FormField
-            control={form.control}
-            name="audiences"
-            render={() => (
-              <FormItem>
-                <div className="my-2">
-                  <FormLabel className="text-base">Select target audience(s): <span className="text-red-400">*</span></FormLabel>
-                </div>
-                {audiences.map((audience) => (
-                  <FormField
-                    key={audience.id}
-                    control={form.control}
-                    name="audiences"
-                    render={({ field }) => {
-                      return (
-                        <FormItem
-                          key={audience.id}
-                          className="flex flex-row items-start space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(audience.id)}
-                              onCheckedChange={(checked) => {
-                                return checked
-                                  ? field.onChange([...field.value, audience.id])
-                                  : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== audience.id
-                                    )
-                                  )
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {audience.label}
-                          </FormLabel>
-                        </FormItem>
-                      )
-                    }}
-                  />
-                ))}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        </OverlayProvider>*/}
 
-          {/* Reasons for using drugs */}
-          <div>
-            <Label htmlFor="reasons">Reasons the target audience use drugs</Label>
-            <Input className="w-96 mt-1" type="text" id="reasons" placeholder="Enter reasons" value={reasonValue}
-              onChange={(e) => setReasonValue(e.target.value)} />
-            {/* Show DropdownMenu if input is not empty */}
-            {(
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button1>{reasonConfirmedValue}</Button1>
-                </DropdownTrigger>
-                <DropdownMenu className="bg-white border-2 rounded border-black" selectionMode="single" selectedKeys={reasonConfirmedValue}
-                  onSelectionChange={setReasonConfirmedValue}>
-                  {filterPrompts.map((item) => (
-                    <DropdownItem key={item.prompt} className="border-none hover:bg-slate-200">
-                      {item.prompt}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            )}
-          </div>
+        <Spacer y={36}/>
+        
+        <Input
+          key="attachments"
+          type="file"
+          label="Upload multiple files at once to be used as reference material (.pdf, .png, .jpg etc). Ensure the filename is relevant to the file content."
+          labelPlacement="outside"
+          multiple={true}
+          onChange={(e) => setSelectedFiles(e.target.files ? Array.from(e.target.files) : null)}
+        />
+     
+      </section>
 
-          {/* Custom Audience Input Field */}
-          <div>
-            <Label htmlFor="custom-audience">Custom Audience</Label>
-            <Input
-              className="w-96 mt-1"
-              type="text"
-              id="custom-audience"
-              placeholder="Your prompt"
-              value={customValue}
-              onChange={(e) => setCustomValue(e.target.value)}
-            />
-            {/* Show DropdownMenu if input is not empty */}
-            {(
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button1>{customConfirmedValue}</Button1>
-                </DropdownTrigger>
-                <DropdownMenu className="bg-white border-2 rounded border-black" selectionMode="single" selectedKeys={customConfirmedValue}
-                  onSelectionChange={setCustomConfirmedValue}>
-                  {filteredPrompts.map((item) => (
-                    <DropdownItem key={item.prompt} className="border-none hover:bg-slate-200">
-                      {item.prompt}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            )}
-          </div>
 
-          <h2 className="font-medium">Select reference materials:</h2>
-          <OverlayProvider>
-            <Gallery
-              {...{ images, widths, ratios }}
-              lastRowBehavior="match-previous"
-              overlay={(i) => <SelectedOverlay index={i} />}
-            />
-          </OverlayProvider>
+      {/* FileUpload file format limits based on output format. Will have to implement this */}
+      {/* <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" /> */}
 
-          {/* FileUpload file format limits based on output format. Will have to implement this */}
-          <FileUpload label="Upload a file to be used as reference material (.png, .jpg)" />
-
-          <Button className="pr-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={() => { console.log(customConfirmedValue.anchorKey) }}>
-            <BsStars className="mr-1 h-3 w-3" />Generate
-          </Button>
-        </form>
-      </Form>
-
+      {completed && <h2 className="text-green-700 font-semibold mt-4">{generatedFormat} has been generated! View the result in the "Edit" tab.</h2>}
+      <Button isDisabled={loading} className="pr-4 my-4 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90" onPress={async () => 
+        {
+          setCompleted(false);
+          setLoading(true);
+          setGeneratedFormat(radioFormat)
+          const generatedText = await BundleInputs(radioFormat, radioAudience, textCustom, textReasons, dropdownSelectedReason as Set<string>, selectedFiles) as string;
+          setText(generatedText);
+          setLoading(false);
+          setCompleted(true);
+        }
+      }>
+        {/* Keep the spinner even when switch tabs */}
+        {loading ? <Spinner color="default" size="sm" /> : <BsStars className="mr-1 h-3 w-3" />}Generate
+      </Button>
     </main>
   )
+}
+
+async function ChatBotResponse(input: string, target: string, attachments: File[] | null) {
+  console.log("ChatBotResponse called!")
+  if (attachments && attachments.length > 0) {
+    try {
+      const formData = new FormData();
+      formData.append('audience', target);
+
+      // Loop through each file and append to formData
+      for (let i = 0; i < attachments.length; i++) {
+        formData.append('files', attachments[i], attachments[i].name);
+      }
+
+      const uploadResponse = await fetch('../api/uploader', { // Ensure the correct API route
+        method: 'POST',
+        body: formData, // Use FormData for file uploads
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`HTTP error! status: ${uploadResponse.status}`);
+      }
+
+      // Check if the response has content before trying to parse it
+      const uploadResponseText = await uploadResponse.text();
+      if (!uploadResponseText) {
+        throw new Error('Empty response from server');
+      }
+      console.log('Files uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      return; // Early exit if file upload fails
+    }
+  }
+
+  try {
+    const response = await fetch('../api/chatbot', { // Ensure the correct API route
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: input, audience: target }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Check if the response has content before trying to parse it
+    const responseText = await response.text();
+
+    if (!responseText) {
+      throw new Error('Empty response from server');
+    }
+
+    // Parse the response as JSON
+    const data = JSON.parse(responseText).message;
+    // console.log(data);
+    return data;
+  } catch (error) {
+    console.error('Error parsing JSON or fetching data:', error);
+  }
+}
+
+async function GenerateImage(input: string) {
+  console.log(input)
+  try {
+    const response = await fetch('../api/imager', { // Ensure the correct API route
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: input }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Check if the response has content before trying to parse it
+    const responseText = await response.text();
+    if (!responseText) {
+      throw new Error('Empty response from server');
+    }
+
+    const data = JSON.parse(responseText).message;
+    return data;
+  } catch (error) {
+    console.error('Error parsing JSON or fetching data:', error);
+  }
+}
+
+async function BundleInputs(format: string, audience: string, customAudience: string, reason: string, selectedReason: Set<string>, attachments: File[] | null) {
+
+  // console.log over here look at browser!!!
+  const prompt: string = `
+    Consider the following information and generate the necessary materials that is appropriate for all the target audience listed.
+    You should consider the background of the target audience and the potential ways they might get involved in drug usage, and address these issues in your response.
+    Target audience: ${audience === "Custom (Specify)" ? customAudience : audience}
+    Reasons the target audience use drugs: ${reason || "NIL"}
+    Additional reasons the target audience use drugs: ${selectedReason.values().next().value || "NIL"}
+  `
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+    .trim();
+
+  const imagePrompt: string = `
+    When you generate images, you tend to generate inappropriate text. So, generating an image without text is always preferred. Generate an image that is appropriate to ${audience === "Custom (Specify)" ? customAudience : audience}. Also, the image must be releated to the reasons the target audience use drugs which is described as follows: ${selectedReason.values().next().value}. Additional reason (if any): ${reason || "NIL"}.
+  `
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+    .trim();
+
+  switch (format) {
+    case "Poster":
+      console.log("In construction");
+      break;
+    case "Info Package": // Only one we have implemented
+      console.log(prompt);
+      const imagesString = (await GenerateImage(imagePrompt))
+                            .map((url: string) => `<img src="${url}" alt="Generated Image" height="240" />`).join('<br />');
+      const generatedText = (await ChatBotResponse(prompt, audience, attachments)).replaceAll('\n', '<br />');
+      console.log("Generated text: ", generatedText);
+      return `${imagesString}<br /><br />${generatedText}`;
+    case "Resource Toolkit":
+      console.log("In construction");
+      break;
+    case "Article":
+      console.log("In construction");
+      break;
+    case "Email":
+      console.log("In construction");
+      break;
+    case "Video":
+      console.log("In construction");
+      break;
+  }
 }

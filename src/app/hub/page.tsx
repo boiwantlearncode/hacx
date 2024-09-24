@@ -3,17 +3,20 @@
 import React, { useState } from "react";
 import Link from 'next/link';
 // import {NextUIProvider, Tabs, Tab, Spacer, Button} from "@nextui-org/react";
-import { Button1 } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/VerticalTabs";
+import Spacer from "./components/Spacer";
+import { useUser } from '../../context/userContext'; 
 
 import AIGeneratorForm from "./AIGeneratorForm";
 import EditForm from "./EditForm";
 
 
 export default function Home() {
+  const { username } = useUser();
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-muted">
+      <h1 className="text-2xl font-bold text-center">Welcome, {username}!</h1>
       <section className="flex flex-col w-full items-center">
         <Tabs defaultValue="Generate" className="w-5/6">
           <TabsList>

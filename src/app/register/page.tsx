@@ -7,6 +7,7 @@ export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -14,6 +15,7 @@ export default function Register() {
     console.log('Name:', name);
     console.log('Email:', email);
     console.log('Password:', password);
+    setIsRegistered(true);
   };
 
   return (
@@ -64,6 +66,11 @@ export default function Register() {
             Register
           </button>
         </form>
+        {isRegistered && (
+          <p className="text-center text-sm text-green-600 font-bold mt-4">
+            User registered successfully!
+          </p>
+        )}
         <p className="text-center text-sm text-gray-600 mt-4">
           Already have an account? <Link href="/" className="text-indigo-500 hover:underline">Login</Link>
         </p>

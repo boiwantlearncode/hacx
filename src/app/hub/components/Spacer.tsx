@@ -13,6 +13,8 @@ export default function Spacer({ y, x }: SpacerProps) {
   const style: React.CSSProperties = {
     height: y ? `${y}px` : undefined,
     width: x ? `${x}px` : undefined,
+    margin: 0,
+    padding: 0
   };
 
   return <div style={style}></div>;
