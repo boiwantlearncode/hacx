@@ -113,30 +113,14 @@ async function BundleInputs(format: string, audience: string, customAudience: st
 
   setImagePrompt(_imagePrompt);
 
-  switch (format) {
-    case "Info Package": // Only one we have implemented
+
       console.log(prompt);
       const imagesString = (await GenerateImage(_imagePrompt))
                             .map((url: string) => `<img src="${url}" alt="Generated Image" height="240">`).join('<br>');
       const generatedText = (await ChatBotResponse(prompt, audienceString, format, attachments)).replaceAll('\n', '<br>');
       console.log("Generated text: ", generatedText);
       return `${imagesString}<br /><br />${generatedText}`;
-    case "Poster":
-      console.log("In construction");
-      break;
-    case "Resource Toolkit":
-      console.log("In construction");
-      break;
-    case "Article":
-      console.log("In construction");
-      break;
-    case "Email":
-      console.log("In construction");
-      break;
-    case "Video":
-      console.log("In construction");
-      break;
-  }
+    
 }
 
 export {ChatBotResponse, GenerateImage, BundleInputs};
