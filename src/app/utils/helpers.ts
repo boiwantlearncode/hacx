@@ -1,9 +1,10 @@
-async function ChatBotResponse(input: string, target: string, attachments: File[] | null) {
+async function ChatBotResponse(input: string, target: string, resource_type: string, attachments: File[] | null) {
   console.log("ChatBotResponse called!")
   if (attachments && attachments.length > 0) {
     try {
       const formData = new FormData();
       formData.append('audience', target);
+      formData.append('resource_type', resource_type);
 
       // Loop through each file and append to formData
       for (let i = 0; i < attachments.length; i++) {
@@ -112,30 +113,14 @@ async function BundleInputs(format: string, audience: string, customAudience: st
 
   setImagePrompt(_imagePrompt);
 
-  switch (format) {
-    case "Info Package": // Only one we have implemented
+
       console.log(prompt);
       const imagesString = (await GenerateImage(_imagePrompt))
                             .map((url: string) => `<img src="${url}" alt="Generated Image" height="240">`).join('<br>');
-      const generatedText = (await ChatBotResponse(prompt, audienceString, attachments)).replaceAll('\n', '<br>');
+      const generatedText = (await ChatBotResponse(prompt, audienceString, format, attachments)).replaceAll('\n', '<br>');
       console.log("Generated text: ", generatedText);
       return `${imagesString}<br /><br />${generatedText}`;
-    case "Poster":
-      console.log("In construction");
-      break;
-    case "Resource Toolkit":
-      console.log("In construction");
-      break;
-    case "Article":
-      console.log("In construction");
-      break;
-    case "Email":
-      console.log("In construction");
-      break;
-    case "Video":
-      console.log("In construction");
-      break;
-  }
+    
 }
 
 export {ChatBotResponse, GenerateImage, BundleInputs};

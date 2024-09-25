@@ -184,11 +184,12 @@ export default function AIGeneratorForm() {
         >
           {
             formats.map((format) => (
-              (format.id === "Info Package") ? (
+              <Radio key={format.id} value={format.id}>{format.label}</Radio>
+         /*      (format.id === "Info Package") ? (
                 <Radio key={format.id} value={format.id}>{format.label}</Radio>
               ) : (
                 <Radio isDisabled key={format.id} value={format.id}>{format.label}</Radio>
-              )
+              ) */
             ))
           }
         </RadioGroup>
