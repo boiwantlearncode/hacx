@@ -1,15 +1,16 @@
+import type { pdfInfo } from '@/store/store';
 import React from 'react';
 
-interface PDF {
-  title: string;
-  owner: string;
-  shared_with: string[];
-}
+// interface PDF {
+//   title: string;
+//   owner: string;
+//   shared_with: string[];
+// }
 
 interface CanvaHomepageProps {
-  userPdfs: PDF[];
-  sharedPdfs: PDF[];
-  onPdfClick: () => void; // Add the click handler prop
+  userPdfs: pdfInfo[];
+  sharedPdfs: pdfInfo[];
+  onPdfClick: (pdf: pdfInfo) => void; // Add the click handler prop
 }
 
 const CanvaHomepage: React.FC<CanvaHomepageProps> = ({ userPdfs, sharedPdfs, onPdfClick }) => {
@@ -30,7 +31,7 @@ const CanvaHomepage: React.FC<CanvaHomepageProps> = ({ userPdfs, sharedPdfs, onP
           <li 
             key={index} 
             className="p-4 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer transition duration-300"
-            onClick={onPdfClick}
+            onClick={() => onPdfClick(pdf)}
           >
             <h2 className="text-xl font-semibold text-blue-600">{pdf.title}</h2>
             <p className="text-gray-600">Owner: {pdf.owner}</p>
@@ -44,7 +45,7 @@ const CanvaHomepage: React.FC<CanvaHomepageProps> = ({ userPdfs, sharedPdfs, onP
           <li 
             key={index} 
             className="p-4 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer transition duration-300"
-            onClick={onPdfClick}
+            onClick={() => onPdfClick(pdf)}
           >
             <h2 className="text-xl font-semibold text-blue-600">{pdf.title}</h2>
             <p className="text-gray-600">Owner: {pdf.owner}</p>

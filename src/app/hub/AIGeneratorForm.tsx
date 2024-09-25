@@ -159,7 +159,7 @@ export default function AIGeneratorForm() {
     localStorage.setItem('customSelectedReason1', JSON.stringify(customSelectedReason1));
   }, [customSelectedReason1]);
 
-  const { text, setText, loading, setLoading, completed, setCompleted, imageLoading, setImageLoading, imagePrompt, setImagePrompt } = usePDFStore(
+  const { workingPDF, setWorkingPDF, loading, setLoading, completed, setCompleted, imageLoading, setImageLoading, imagePrompt, setImagePrompt } = usePDFStore(
     (state) => state,
   )
 
@@ -297,7 +297,8 @@ export default function AIGeneratorForm() {
           const cr = Array.from(customSelectedReason).join('') === "View previously used prompts" ? textCustom : Array.from(customSelectedReason).join('');
           const dr = Array.from(dropdownSelectedReason).join('') === "View previously used prompts" ? textReasons : Array.from(dropdownSelectedReason).join('');
           const generatedText = await BundleInputs(radioFormat, radioAudience, cr, dr, selectedFiles, setImagePrompt) as string;
-          setText(generatedText);
+          // setText(generatedText);
+          setWorkingPDF({ content: generatedText });
           setLoading(false);
           setCompleted(true);
         }

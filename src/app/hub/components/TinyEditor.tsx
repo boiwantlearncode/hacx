@@ -7,22 +7,33 @@ import {
 } from "@nextui-org/react";
 
 import { usePDFStore } from '@/providers/pdf-store-provider';
+import { useUser } from '@/context/userContext'; 
 import { BsStars } from 'react-icons/bs';
 import { GenerateImage } from '@/app/utils/helpers';
+import type { pdfInfo } from "@/store/store";
 
 export default function TinyEditor() {
+  const { username } = useUser();
+
   const { 
-    text, setText, 
+    workingPDF, setWorkingPDF,
     loading, setLoading, 
     completed, setCompleted, 
     imageLoading, setImageLoading, 
-    imagePrompt, setImagePrompt 
+    imagePrompt, setImagePrompt,
+    savedPDFs, setSavedPDFs
   } = usePDFStore(
     (state) => state,
   )
 
   useEffect(() => {
-    setText('');
+    // setText('');
+    if (workingPDF.title === '')  {
+      setWorkingPDF({ title: `PDF ${savedPDFs.length + 1}`})
+    }
+    if (workingPDF.owner === '')  {
+      setWorkingPDF({ owner: username })
+    }
   }, []);
 
   return (
@@ -39,8 +50,9 @@ export default function TinyEditor() {
                             .map((url: string) => `<img src="${url}" alt="Generated Image" height="240">`).join('<br>');
           console.log(imagesString);
           const imgTagPattern = /<img src="[^"]+" alt="Generated Image" height="240">/g;          
-          console.log(text.replace(imgTagPattern, imagesString));
-          setText(text.replace(imgTagPattern, imagesString));
+          console.log(workingPDF.content.replace(imgTagPattern, imagesString));
+
+          setWorkingPDF({'content': workingPDF.content.replace(imgTagPattern, imagesString)});
           setImageLoading(false);
           setCompleted(true);
         }
@@ -62,8 +74,15 @@ export default function TinyEditor() {
           toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
           height: "90vh",
         }}
-        value={text}
-        onEditorChange={(newValue, editor) => setText(newValue)}
+        value={workingPDF.content}
+        onEditorChange={(newValue, editor) => {
+          setWorkingPDF({ content: newValue });
+          if (!savedPDFs.some((pdf: pdfInfo) => pdf.title === workingPDF.title)) {
+            setSavedPDFs([...savedPDFs, workingPDF]);
+          } else {
+            setSavedPDFs(savedPDFs.map((pdf: pdfInfo) => pdf.title === workingPDF.title ? workingPDF : pdf));
+          }
+        }}
       />
 
     </main>
