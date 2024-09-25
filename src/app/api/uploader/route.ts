@@ -12,6 +12,7 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
         try {
             const formData = await req.formData();  // Use formData to handle files
 
+            const format = formData.get('resource_type')?.toString();  // Get 'format' from the formData
             const audience = formData.get('audience')?.toString();  // Get 'audience' from the formData
             const formFiles = formData.getAll('files');  // Get the 'files' from the formData
 
@@ -31,7 +32,13 @@ export async function POST(req: NextRequest, res: NextResponse<AssistantResponse
                 );
             }
 
-            const uploadResponse = await uploadFiles(files, audience);
+            if (!format) {
+                return NextResponse.json(
+                    { status: 400, error: 'Format is required' },
+                );
+            }
+
+            const uploadResponse = await uploadFiles(files, audience, format);
 
             return NextResponse.json(
                 { message: uploadResponse },
