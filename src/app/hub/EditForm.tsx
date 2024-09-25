@@ -48,7 +48,6 @@ export default function EditForm() {
         </>
       )}
       <TinyEditor />
-      
     </main>
   )
 }
