@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-muted">
-      <h1 className="text-2xl font-bold text-center">Welcome, {username}!</h1>
+      <h1 className="text-xl font-normal text-center"><em>Welcome, {username}</em></h1>
       <section className="flex flex-col w-full items-center">
         <Tabs defaultValue="Generate" className="w-5/6">
           <TabsList>

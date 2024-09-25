@@ -49,5 +49,6 @@ export const generator = async (prompt: string, n: number = 1, size: string = "1
         return generatedImages;
     } catch (error: any) {
         console.error(`Error generating images: ${error.message}`);
+        throw Error(`Error generating images: ${error.message}`);
     }
 };

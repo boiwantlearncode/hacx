@@ -3,7 +3,7 @@
 import { type ReactNode, createContext, useRef, useContext } from 'react'
 import { useStore } from 'zustand'
 
-import { type PDFStore, createPDFStore } from '@/lib/store'
+import { type PDFStore, createPDFStore } from '@/store/store'
 
 export type PDFStoreApi = ReturnType<typeof createPDFStore>
 
