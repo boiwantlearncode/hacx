@@ -27,7 +27,7 @@ const getClient = () => {
 
 const assistantsClient = getClient();
 
-const vectorStoreID = "vs_ifXoUL5ceuFJLkLKtdHjUAVD";
+const vectorStoreID = "vs_6D7dI3S2nKzD1omCGfqpZd9E";
 const options = {
     model: "GenAI", // replace with model deployment name
     name: "Preventive Drug Education",
