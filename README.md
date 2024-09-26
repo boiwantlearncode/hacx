@@ -6,8 +6,7 @@ The Iron Wall is a web interface powered by generative AI that enables users to 
 - Makes use of Azure OpenAI Assistant which has system instructions shown in the figure below to make the output consistent with fewer hallucinations.
   
   ![image](https://github.com/user-attachments/assets/0046622a-3b50-463d-a24c-f2c9a314e2ba)
-- The form also has a multiple file uploader component that allows users to upload reference materials. These materials will have their filenames labelled based on target audience and resource format chosen when uploaed into the chatbot's vector file search storage to allow it to reference more relevant materials. The uploaded materials are by all users which allows for greater reliability in the long term and ease of use due to automated referencing instead of users having to select the reference materials manually.
-
+- The form also has a multiple file uploader component that allows users to upload reference materials. These materials will have their filenames labelled based on target audience and resource format chosen when uploaed into the chatbot's vector file search storage to allow it to reference more relevant materials. The uploaded materials are by all users which allows for greater reliability due to a larger database in the long term. 
   ![image](https://github.com/user-attachments/assets/11c8b48f-67aa-44ab-875d-f058608719d2)
   **The uploaded files are automatically added into the vector file search**
   
